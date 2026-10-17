@@ -1,0 +1,12 @@
+{
+  "name": "daughters-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "icons": "node make-icons.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
+}
