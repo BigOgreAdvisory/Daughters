@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="parent" content="words.html">
+<title>Read and Answer</title>
+<style>
+@font-face{font-family:"WHRead";src:url("fonts/andika.ttf") format("truetype");font-weight:400}
+@font-face{font-family:"WHRead";src:url("fonts/andika-bold.ttf") format("truetype");font-weight:700}
+@font-face{font-family:"WHFun";src:url("fonts/fredoka.ttf") format("truetype");font-weight:600}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:#0B1026;background-image:radial-gradient(circle at 30% 15%, #2A1E5C 0%, #131A3D 45%, #0B1026 80%);color:#F3F6FF;font-family:"WHFun","Trebuchet MS",sans-serif;font-weight:600;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:rgba(0,0,0,0);overflow:hidden;
+}
+button{font-family:inherit;font-weight:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer;outline:none}
+img{display:block}
+.screen{display:none;position:absolute;left:0;top:0;right:0;bottom:0;padding:3vmin 4vmin;overflow:hidden;z-index:1}
+.screen.on{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
+.paper{background:#F7F9FF;color:#1F2A44;border:0.5vmin solid #1F2A44;border-radius:2.8vmin;box-shadow:0.8vmin 0.8vmin 0 #05081A}
+.press{-webkit-transition:-webkit-transform .08s,box-shadow .08s,background .15s;transition:transform .08s,box-shadow .08s,background .15s}
+.press:active{-webkit-transform:translate(0.5vmin,0.5vmin);transform:translate(0.5vmin,0.5vmin);box-shadow:0.3vmin 0.3vmin 0 #05081A}
+.flex{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center}
+
+/* level list */
+.hero{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;margin:2vmin 0 4vmin}
+.hero img{width:12vmin;height:12vmin;-webkit-flex:none;flex:none;margin-right:3vmin}
+.hero h1{margin:0;font-size:9vmin;line-height:1;font-weight:600;color:#FFD93D;text-shadow:0.6vmin 0.6vmin 0 #05081A}
+.hero p{margin:1vmin 0 0;font-size:3.6vmin;color:#B9C3F2}
+.path{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin:0 -1.2vmin}
+.stone{width:31.3%;margin:1.2vmin 1%;padding:2.2vmin 2.4vmin;text-align:left;min-height:26vmin;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
+.num{width:7vmin;height:7vmin;border-radius:50%;border:0.5vmin solid #1F2A44;font-size:3.6vmin;line-height:6vmin;text-align:center;color:#1F2A44}
+.sname{font-size:3.4vmin;margin-top:1.4vmin}
+.ex{font-family:"WHRead",sans-serif;font-weight:400;font-size:3vmin;color:#4F5F80;margin-top:.6vmin}
+.best{margin-top:auto;padding-top:1vmin;font-size:2.6vmin;color:#4F5F80}
+.best b{color:#1F2A44}
+.foot{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-align-items:center;align-items:center;margin-top:auto;padding-top:2vmin}
+.credit{font-size:1.8vmin;color:#7F8AC0;width:100%}
+
+/* game */
+.bar{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;margin-bottom:1vmin}
+.dots{-webkit-flex:1;flex:1;text-align:center;font-size:0}
+.dot{display:inline-block;width:3.6vmin;height:3.6vmin;border-radius:50%;border:0.45vmin solid #5CE1E6;background:#131A3D;margin:0 .8vmin}
+.dot.now{background:#5CE1E6}.dot.gold{background:#FFD93D;border-color:#FFD93D}.dot.ok{background:#7CFFB2;border-color:#7CFFB2}
+.stars{font-size:4vmin;min-width:13vmin;text-align:right;color:#FFD93D}
+.stage{-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;min-height:0}
+.hintrow{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;margin-bottom:2vmin}
+.hint{margin:0;font-size:3.8vmin;color:#B9C3F2;text-align:center}
+.sayb{width:8vmin;height:8vmin;border-radius:50%;background:#FFD93D;margin-left:2vmin;-webkit-flex:none;flex:none}
+.sayb img{width:5vmin;height:5vmin}
+/* the story on paper, the question under it, then the answers */
+.story{width:100%;max-width:150vmin;padding:3vmin 4vmin;font-family:"WHRead",sans-serif;font-weight:400;font-size:5.6vmin;line-height:1.55;text-align:left}
+.story img{display:inline-block;width:7vmin;height:7vmin;vertical-align:middle;margin-right:2vmin}
+.story .ev{border-radius:1vmin;-webkit-transition:background .3s;transition:background .3s}
+.story.show .ev{background:#FFE36B;box-shadow:0 0 0 0.6vmin #FFE36B}
+.qline{margin:3vmin 0 0;font-family:"WHRead",sans-serif;font-weight:700;font-size:5vmin;color:#FFD93D;text-align:center;line-height:1.3}
+.choices{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-justify-content:center;justify-content:center;margin-top:2.6vmin}
+.choice{min-width:24vmin;margin:1vmin 1.4vmin;padding:2.2vmin 3.6vmin;font-family:"WHRead",sans-serif;font-weight:700;font-size:4.6vmin;border-radius:2.4vmin;line-height:1.2}
+.choice.right{background:#7CFFB2}
+.choices.pic .choice{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;padding:1.6vmin 2.4vmin}
+.choices.pic .choice img{width:13vmin;height:13vmin;margin:0 .8vmin}
+.choices.yes .choice{min-width:22vmin}
+/* order: three event buttons side by side (stacked when upright) */
+.choices.order{width:100%;max-width:150vmin;-webkit-flex-wrap:nowrap;flex-wrap:nowrap;-webkit-align-items:stretch;align-items:stretch}
+.choices.order .choice{-webkit-flex:1 1 0;flex:1 1 0;min-width:0;margin:0 1vmin;padding:1.6vmin 2vmin;font-size:4.2vmin;text-align:left;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center}
+.ordnum{display:inline-block;width:6vmin;height:6vmin;-webkit-flex:none;flex:none;margin-right:2vmin;border-radius:50%;border:0.45vmin dashed #4F5F80;text-align:center;line-height:5.2vmin;font-size:4vmin;color:#1F2A44}
+.choice.right .ordnum{border:0.45vmin solid #1F2A44;background:#FFD93D}
+.choice.wrong{background:#FFC2E6;opacity:.55}
+.nope{-webkit-animation:shake .4s;animation:shake .4s}
+@-webkit-keyframes shake{20%{-webkit-transform:translateX(-1.4vmin)}40%{-webkit-transform:translateX(1.4vmin)}60%{-webkit-transform:translateX(-.8vmin)}80%{-webkit-transform:translateX(.8vmin)}}
+@keyframes shake{20%{transform:translateX(-1.4vmin)}40%{transform:translateX(1.4vmin)}60%{transform:translateX(-.8vmin)}80%{transform:translateX(.8vmin)}}
+
+/* end */
+.endbox{-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;text-align:center}
+.endbox img{width:18vmin;height:18vmin}
+.endbox h2{margin:2vmin 0 1vmin;font-size:10vmin;font-weight:600;line-height:1;color:#FFD93D;text-shadow:0.6vmin 0.6vmin 0 #05081A}
+.score{font-size:4.4vmin;color:#B9C3F2}
+.score b{color:#FFD93D}
+.endbtns{margin-top:4vmin;display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-justify-content:center;justify-content:center}
+.bigbtn{padding:2.4vmin 4vmin;font-size:3.8vmin;border-radius:2.6vmin;margin:1vmin 1.4vmin}
+.bigbtn.go{background:#7CFFB2;color:#14193A}
+
+.bit{position:fixed;width:1.8vmin;height:1.8vmin;border-radius:.4vmin;pointer-events:none;z-index:9;
+  -webkit-transition:-webkit-transform .9s ease-out,opacity .9s ease-out;transition:transform .9s ease-out,opacity .9s ease-out}
+#sky{position:fixed;left:0;top:0;right:0;bottom:0;pointer-events:none;z-index:0}
+.star{position:absolute;border-radius:50%;background:#fff;-webkit-animation:twinkle 3s ease-in-out infinite;animation:twinkle 3s ease-in-out infinite}
+@-webkit-keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+@media (orientation: portrait){
+  .stone{width:48%}
+  .dot{width:3vmin;height:3vmin;margin:0 .4vmin}
+  .story{font-size:5.4vmin}
+  .choices{-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:stretch;align-items:stretch;width:80%}
+  .choices.order{-webkit-flex-direction:column;flex-direction:column;width:90%}
+  .choices.order .choice{-webkit-flex:none;flex:none;margin:.8vmin 0}
+}
+</style>
+<link rel="stylesheet" href="back.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0B1026">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Space Words">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+</head>
+<body>
+<div id="sky"></div>
+<button class="backbtn" id="backBtn" aria-label="Back"><b>&#8592;</b>Back</button>
+
+<section class="screen on" id="home">
+  <div class="hero backroom">
+    <img src="emoji/1f4da.svg" alt="">
+    <div><h1>Read and Answer</h1><p>Read the story, then answer the question.</p></div>
+  </div>
+  <div class="path" id="path"></div>
+  <div class="foot">
+    <span class="credit">Pictures: Twemoji by Twitter and contributors, CC-BY 4.0</span>
+  </div>
+</section>
+
+<section class="screen" id="game">
+  <div class="bar">
+    <span class="barspace"></span>
+    <div class="dots" id="dots"></div>
+    <div class="stars" id="stars"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+</section>
+
+<section class="screen" id="end">
+  <div class="endbox">
+    <img src="emoji/1f47d.svg" alt="">
+    <h2 id="endTitle"></h2>
+    <div class="score" id="endScore"></div>
+    <div class="endbtns" id="endBtns"></div>
+  </div>
+</section>
+
+<script src="speech.js"></script>
+<script src="ways.js"></script>
+<script>
+(function(){
+"use strict";
+
+function $(id){ return document.getElementById(id); }
+function el(tag, cls, html){ var e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; }
+function shuffle(a){ a = a.slice(); for (var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random()*(i+1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function hasClass(e, c){ return (" " + e.className + " ").indexOf(" " + c + " ") >= 0; }
+function addClass(e, c){ if (!hasClass(e, c)) e.className += " " + c; }
+function removeClass(e, c){ e.className = (" " + e.className + " ").replace(" " + c + " ", " ").replace(/^\s+|\s+$/g, ""); }
+function show(id){ ["home","game","end"].forEach(function(s){ $(s).className = "screen" + (s === id ? " on" : ""); }); document.body.setAttribute("data-screen", id); Ways.close(); }
+function say(keys, done){ if (keys && keys.length) Speech.say(keys, done); }
+
+/* One level per block; four kinds of question:
+     "story | question | answer | wrong | wrong | clue"         who / what / where...: 3 answers
+     "yes: story | question | Yes or No | clue"                 yes or no
+     "order: story | first / next / last"                      tap what happened first, next, last
+     "pic: story | word+word | word+word | word+word | clue"    which picture shows it (first is right;
+                                                                pictures are Picture Planet words)
+   The clue is the part of the story that gives the answer away: it lights up yellow once she answers
+   (or after the misses), so she sees where the story told her. Every word in a story or question can
+   be tapped to hear it. web-test.js checks the clues, answers, pictures and clips. */
+var LEVELS = [
+  { name:"One sentence", ex:"Who? What?", raw:[
+    "The cat sat on the mat. | Who sat on the mat? | the cat | the dog | the pig | The cat sat",
+    "The dog ran to the box. | What did the dog run to? | the box | the bed | the bus | to the box",
+    "Sam has a red hat. | Who has a red hat? | Sam | Max | Mia | Sam has",
+    "The pig is in the mud. | What is the pig in? | the mud | the tub | the bed | in the mud",
+    "Mia can see a big bug. | What can Mia see? | a big bug | a big dog | a big cup | a big bug",
+    "The hen sat on an egg. | What did the hen sit on? | an egg | a log | a box | on an egg",
+    "Ben got a cup of milk. | What did Ben get? | a cup of milk | a cup of jam | a box of eggs | a cup of milk",
+    "The frog sat on a log. | Who sat on a log? | the frog | the fish | the duck | The frog sat",
+    "Max can run fast. | What can Max do fast? | run | swim | jump | run fast",
+    "The sun is up. | What is up? | the sun | the moon | the cat | The sun is up",
+    "Kim fed the fish. | What did Kim feed? | the fish | the cat | the duck | fed the fish",
+    "The bus is big. | What is big? | the bus | the bug | the cup | The bus is big",
+    "Tom sat in the tub. | Where did Tom sit? | in the tub | in the van | on the bed | in the tub",
+    "The duck can swim. | What can the duck do? | swim | sing | read | can swim",
+    "Ann hid the ball. | What did Ann hide? | the ball | the hat | the doll | hid the ball",
+    "The bat is in the tree. | Where is the bat? | in the tree | in the box | in the bed | in the tree",
+    "Jack ate a big plum. | What did Jack eat? | a plum | a bun | an egg | a big plum",
+    "The ant is on the cake. | What is the ant on? | the cake | the hat | the rug | on the cake",
+    "Zoe can kick the ball. | Who can kick the ball? | Zoe | Sam | Ben | Zoe can kick",
+    "The sheep is on the hill. | Who is on the hill? | the sheep | the goat | the cow | The sheep is on the hill",
+    "Dad got a new van. | What did Dad get? | a van | a bike | a boat | a new van",
+    "The baby is in bed. | Who is in bed? | the baby | the dog | Mom | The baby is in bed",
+    "Mom made a pie. | What did Mom make? | a pie | a cake | a hat | made a pie",
+    "The owl sat in the dark. | Who sat in the dark? | the owl | the hen | the fox | The owl sat",
+    "Liv can hop on one leg. | What can Liv do on one leg? | hop | sit | nap | can hop",
+    "The fox ran into the den. | Where did the fox run? | into the den | into the pond | up the hill | into the den",
+    "pic: The cat is in the box. | cat+box | dog+box | cat+bed | The cat is in the box",
+    "pic: A bee is on the rose. | bee+rose | bug+rose | bee+tree | A bee is on the rose",
+    "pic: The duck is in the tub. | duck+tub | duck+boat | hen+tub | The duck is in the tub",
+    "pic: The pig has a hat. | pig+hat | pig+crown | cow+hat | The pig has a hat",
+    "pic: A bug is on the cake. | bug+cake | bug+pie | snail+cake | A bug is on the cake",
+    "pic: The dog has a bone. | dog+bone | cat+bone | dog+sock | The dog has a bone",
+    "pic: The fox is by the tent. | fox+tent | fox+house | dog+tent | The fox is by the tent",
+    "pic: The hen sat in the nest. | hen+nest | hen+box | owl+nest | The hen sat in the nest",
+    "pic: A fish is in the cup. | fish+cup | fish+bucket | crab+cup | A fish is in the cup",
+    "pic: The moon is over the tree. | moon+tree | sun+tree | moon+house | The moon is over the tree",
+    "yes: The cat sat on the bed. | Is the cat on the bed? | Yes | The cat sat on the bed",
+    "yes: Sam has a blue cup. | Is the cup red? | No | a blue cup",
+    "yes: The dog can jump. | Can the dog jump? | Yes | can jump",
+    "yes: Mia has a pet frog. | Does Mia have a pet cat? | No | a pet frog",
+    "yes: The bus is at the stop. | Is the bus at the stop? | Yes | at the stop",
+    "yes: Ben fell in the mud. | Did Ben fall in the pond? | No | in the mud",
+    "yes: The sun is hot. | Is the sun cold? | No | The sun is hot",
+    "yes: Kim got a new doll. | Did Kim get a doll? | Yes | got a new doll",
+    "The goat ate the hat. | What did the goat eat? | the hat | the box | the sock | ate the hat",
+    "Mom has a big red bag. | Who has a big red bag? | Mom | Dad | Sam | Mom has",
+    "The cow is in the barn. | Where is the cow? | in the barn | in the tub | on the hill | in the barn",
+    "Max hid under the bed. | Where did Max hide? | under the bed | in the box | up a tree | under the bed",
+    "The bird sang a song. | What did the bird do? | sang a song | ate a bug | took a nap | sang a song",
+    "Zoe has a pet rat. | What pet does Zoe have? | a rat | a cat | a fish | a pet rat"
+  ]},
+  { name:"Little details", ex:"Where? When? How many?", raw:[
+    "The red ball is under the bed. | Where is the ball? | under the bed | on the bed | in the box | under the bed",
+    "Sam has two black cats. | How many cats does Sam have? | two | one | three | two black cats",
+    "The blue bird sat on the fence. | What color is the bird? | blue | red | green | The blue bird",
+    "Mia wore her pink coat to school. | What color is the coat? | pink | purple | brown | her pink coat",
+    "Three ducks swam in the pond. | How many ducks swam? | three | two | five | Three ducks",
+    "Ben plays in the park after lunch. | When does Ben play in the park? | after lunch | after dinner | before school | after lunch",
+    "The big brown dog sleeps by the door. | Where does the dog sleep? | by the door | in the car | on the bed | by the door",
+    "Dad put the green cup on the table. | What color is the cup? | green | yellow | red | the green cup",
+    "Kim found four shells at the beach. | Where did Kim find the shells? | at the beach | at the park | in the yard | at the beach",
+    "Max ate six grapes for a snack. | How many grapes did Max eat? | six | two | ten | six grapes",
+    "The little white rabbit hid in the grass. | Where did the rabbit hide? | in the grass | in a hole | under a car | hid in the grass",
+    "Every night, Liv reads a book with Mom. | Who reads with Liv? | Mom | Dad | Sam | with Mom",
+    "The yellow bus stops at the corner. | What color is the bus? | yellow | blue | orange | The yellow bus",
+    "Tom flew his kite on a windy day. | What did Tom fly? | his kite | his plane | his bird | flew his kite",
+    "Five frogs sat on a big green log. | How many frogs sat on the log? | five | four | nine | Five frogs",
+    "In the morning, the hen lays an egg. | When does the hen lay an egg? | in the morning | at night | at lunch | In the morning",
+    "Ann put her toys in the toy box. | Where did Ann put her toys? | in the toy box | on the shelf | under the bed | in the toy box",
+    "The orange cat naps in the sun. | Where does the cat nap? | in the sun | in the rain | in the bath | naps in the sun",
+    "Jack and Zoe built a sand castle. | Who built a sand castle? | Jack and Zoe | Jack and Sam | Zoe and Mia | Jack and Zoe",
+    "The ship sailed on the blue sea. | Where did the ship sail? | on the sea | on the lake | down the road | on the blue sea",
+    "Grandma baked ten cookies for us. | How many cookies did Grandma bake? | ten | six | eight | ten cookies",
+    "On Sunday we went to the zoo. | When did we go to the zoo? | on Sunday | on Monday | on Friday | On Sunday",
+    "The purple fish swims in a bowl. | What does the fish swim in? | a bowl | a pond | a tub | swims in a bowl",
+    "Sam rode his bike up the hill. | Where did Sam ride his bike? | up the hill | to the store | down the road | up the hill",
+    "The moon is big and bright tonight. | What is big and bright? | the moon | the sun | the lamp | The moon is big and bright",
+    "Mia drew a gray elephant. | What did Mia draw? | an elephant | a mouse | a whale | drew a gray elephant",
+    "pic: Two ducks swim by the boat. | duck+boat | duck+truck | goat+boat | Two ducks swim by the boat",
+    "pic: The monkey is eating a banana. | monkey+banana | monkey+apple | lion+banana | The monkey is eating a banana",
+    "pic: A penguin stands on the ice. | penguin+ice | penguin+beach | owl+ice | A penguin stands on the ice",
+    "pic: Dad sits on the couch and looks at his phone. | couch+phone | chair+phone | couch+pizza | sits on the couch and looks at his phone",
+    "pic: The robot holds a red balloon. | robot+balloon | robot+kite | alien+balloon | The robot holds a red balloon",
+    "pic: A snowman stands next to the tree. | snowman+tree | snowman+house | rabbit+tree | A snowman stands next to the tree",
+    "pic: The turtle swims near a crab. | turtle+crab | turtle+shark | frog+crab | The turtle swims near a crab",
+    "pic: Grandma made pancakes for the baby. | pancakes+baby | waffle+baby | pancakes+dog | made pancakes for the baby",
+    "yes: Sam has three red balls. | Does Sam have two balls? | No | three red balls",
+    "yes: The green frog sat on a lily pad. | Is the frog green? | Yes | The green frog",
+    "yes: After school, Mia rides her bike. | Does Mia ride her bike before school? | No | After school",
+    "yes: The little kitten sleeps in a basket. | Does the kitten sleep in a basket? | Yes | sleeps in a basket",
+    "yes: On Monday, Ben went to the dentist. | Did Ben go to the dentist on Friday? | No | On Monday",
+    "yes: Four birds sat on the wire. | Did four birds sit on the wire? | Yes | Four birds sat",
+    "yes: Kim wore her yellow boots in the rain. | Were the boots yellow? | Yes | her yellow boots",
+    "yes: The white horse ran across the field. | Was the horse black? | No | The white horse",
+    "Liv ate two eggs for breakfast. | How many eggs did Liv eat? | two | one | four | two eggs",
+    "Tom put his red truck on the shelf. | Where did Tom put his truck? | on the shelf | in the box | under the bed | on the shelf",
+    "At night, the stars shine in the sky. | When do the stars shine? | at night | in the morning | at lunch | At night",
+    "The brown bear sleeps in a cave. | Where does the bear sleep? | in a cave | in a tree | in a tent | sleeps in a cave",
+    "Max has eight toy cars. | How many toy cars does Max have? | eight | three | five | eight toy cars",
+    "Ann painted a pink flower on the wall. | What color is the flower? | pink | blue | green | a pink flower",
+    "Every Saturday, Dad makes pancakes. | When does Dad make pancakes? | every Saturday | every Monday | every night | Every Saturday",
+    "Jack sat next to Zoe on the bus. | Who sat next to Zoe? | Jack | Sam | Mom | Jack sat next to Zoe"
+  ]},
+  { name:"Two sentences", ex:"Two sentences", raw:[
+    "Sam has a pet dog. His dog is named Rex. | What is the name of the dog? | Rex | Max | Spot | named Rex",
+    "Mia went to the store. She got milk and bread. | What did Mia get? | milk and bread | eggs and jam | cake and juice | She got milk and bread",
+    "It is raining. Ben puts on his boots. | What does Ben put on? | his boots | his hat | his mittens | puts on his boots",
+    "The cat sat by the window. It saw a bird outside. | What did the cat see? | a bird | a dog | a car | It saw a bird",
+    "Kim lost her hat at the park. Her dad found it under a bench. | Where was the hat? | under a bench | in a tree | by the slide | found it under a bench",
+    "Max planted a seed. Soon it grew into a big sunflower. | What did the seed grow into? | a sunflower | a tree | a rose | grew into a big sunflower",
+    "The bear was hungry. It ate some honey. | What did the bear eat? | honey | fish | berries | It ate some honey",
+    "Liv and Zoe play tag. Liv runs fast, but Zoe catches her. | Who catches Liv? | Zoe | Max | Mom | Zoe catches her",
+    "Tom made a card. He gave it to his grandpa. | Who got the card? | his grandpa | his sister | his teacher | gave it to his grandpa",
+    "The duck had five ducklings. They followed her to the pond. | Where did the ducklings go? | to the pond | to the barn | to the nest | followed her to the pond",
+    "Ann wanted to paint. She got red and blue paint. | What colors did Ann get? | red and blue | green and yellow | black and white | red and blue paint",
+    "Our class went on a trip. We saw lions at the zoo. | What did the class see? | lions | whales | horses | We saw lions",
+    "Jack had a loose tooth. Today it fell out! | What fell out? | his tooth | his toy | his shoe | Today it fell out",
+    "The snowman had a carrot nose. The sun came out and it melted. | What happened to the snowman? | it melted | it fell over | it ran away | it melted",
+    "Dad cooked eggs for breakfast. Mom made toast. | Who made toast? | Mom | Dad | Sam | Mom made toast",
+    "The puppy chewed a shoe. Now the shoe has holes. | What did the puppy chew? | a shoe | a sock | a hat | chewed a shoe",
+    "Zib flew his spaceship to the moon. He found a moon rock there. | Where did Zib fly? | to the moon | to the sun | to the sea | to the moon",
+    "Mia has a fish. It is orange with white stripes. | What color is the fish? | orange and white | blue and green | black and red | It is orange with white stripes",
+    "The baby was crying. Mom sang a song, and the baby fell asleep. | What did Mom do? | sang a song | read a book | made a cake | Mom sang a song",
+    "Sam put on his helmet. Then he rode his scooter. | What did Sam ride? | his scooter | his bike | a horse | rode his scooter",
+    "Kim has a garden. She grows peas and carrots. | What does Kim grow? | peas and carrots | corn and beans | apples and pears | She grows peas and carrots",
+    "The bus was late. We waited at the stop for a long time. | Why did we wait? | the bus was late | it was raining | we were lost | The bus was late",
+    "Ben found a frog in the yard. He let it go by the pond. | Where did Ben let the frog go? | by the pond | in the house | in the yard | let it go by the pond",
+    "Liv has a new kite. It is shaped like a fish. | What is the kite shaped like? | a fish | a bird | a star | shaped like a fish",
+    "The owl sleeps all day. At night it hunts for mice. | When does the owl hunt? | at night | in the day | in the morning | At night it hunts",
+    "Max and Dad went fishing. Max caught the biggest fish. | Who caught the biggest fish? | Max | Dad | Mom | Max caught the biggest fish",
+    "pic: The alien got out of his rocket. He waved at a cow. | alien+cow | alien+pig | robot+cow | He waved at a cow",
+    "pic: Mia went to the beach. She found a shell in the sand. | shell+beach | shell+house | crab+beach | She found a shell in the sand",
+    "pic: It was cold outside. Ben made a snowman and gave it a scarf. | snowman+scarf | snowman+hat | sun+scarf | made a snowman and gave it a scarf",
+    "pic: Dad has a guitar. He plays it for the baby. | guitar+baby | drum+baby | guitar+dog | He plays it for the baby",
+    "pic: A spider sat in its web. It saw a ladybug. | spider+ladybug | spider+bee | ant+ladybug | It saw a ladybug",
+    "pic: Kim got a new kite. She flew it at the beach. | kite+beach | kite+house | balloon+beach | She flew it at the beach",
+    "yes: Max lost his ball. He found it under the car. | Did Max find his ball? | Yes | He found it under the car",
+    "yes: Liv wanted to swim. But the pool was closed. | Did Liv swim in the pool? | No | the pool was closed",
+    "yes: The cat was hungry. Sam gave it some fish. | Did Sam give the cat milk? | No | Sam gave it some fish",
+    "yes: Ann has a little sister. They share a room. | Do Ann and her sister share a room? | Yes | They share a room",
+    "yes: Tom wanted a cookie. Mom said to wait until after dinner. | Can Tom have a cookie now? | No | wait until after dinner",
+    "yes: The plant was droopy. Zoe gave it water, and it stood up tall. | Did the water help the plant? | Yes | it stood up tall",
+    "yes: Jack tried to lift the box. It was too heavy. | Could Jack lift the box? | No | It was too heavy",
+    "yes: The bell rang. The kids ran out to play. | Did the kids go out to play? | Yes | The kids ran out to play",
+    "Ben has a hamster. It runs on its wheel all night. | When does the hamster run? | all night | all day | after lunch | all night",
+    "Mia baked cookies. She gave one to each friend. | What did Mia bake? | cookies | a cake | bread | Mia baked cookies",
+    "The wind blew hard. It blew the hat right off Sam. | What blew the hat off? | the wind | a dog | a bird | The wind blew hard",
+    "Kim and Liv made a fort. They used pillows and a big sheet. | What did they use? | pillows and a sheet | boxes and tape | sticks and leaves | They used pillows and a big sheet",
+    "Grandpa has a farm. He grows corn and beans. | What does Grandpa grow? | corn and beans | peas and carrots | apples and pears | He grows corn and beans",
+    "The kids went sledding. They slid down the big hill. | Where did they slide? | down the big hill | into the pond | down the stairs | They slid down the big hill",
+    "Zoe has a pet bird. It can say hello. | What can the bird say? | hello | goodbye | thank you | It can say hello",
+    "Max fell and broke his arm. Now he has a cast. | What did Max break? | his arm | his leg | his toy | broke his arm",
+    "It was hot outside. We ate cold watermelon. | What did they eat? | watermelon | soup | toast | We ate cold watermelon",
+    "Tom found a penny on the ground. He put it in his piggy bank. | Where did Tom put the penny? | in his piggy bank | in his shoe | in his pocket | in his piggy bank"
+  ]},
+  { name:"Short stories", ex:"Three sentences", raw:[
+    "Zoe went to the beach. She built a big sand castle. Then a wave knocked it down. | What knocked the castle down? | a wave | a dog | the wind | a wave knocked it down",
+    "Sam wanted a snack. He looked in the fridge. He found an apple and ate it. | What did Sam eat? | an apple | a pear | some cheese | He found an apple and ate it",
+    "Today Mia is six. She has a party with her friends. They eat cake and play games. | How old is Mia? | six | five | seven | Today Mia is six",
+    "The farmer has a red barn. In the barn there are cows and pigs. The horses live in the field. | Where do the horses live? | in the field | in the barn | in the house | The horses live in the field",
+    "Ben could not find his shoe. He looked under the bed. It was in the closet! | Where was the shoe? | in the closet | under the bed | in the car | It was in the closet",
+    "Kim and her mom made a pizza. They put cheese and peppers on top. It was yummy! | What did they put on top? | cheese and peppers | ham and pineapple | eggs and beans | They put cheese and peppers on top",
+    "A little bird fell out of its nest. Tom picked it up gently. He put it back in the nest. | What did Tom do with the bird? | put it back in the nest | took it home | gave it to his mom | He put it back in the nest",
+    "Max likes to draw. He drew a rocket going to the moon. He hung it on the wall. | Where did Max hang his picture? | on the wall | on the fridge | on the door | He hung it on the wall",
+    "Liv had a cold. She stayed home from school. Her dad made her soup. | Why did Liv stay home? | she had a cold | it was snowing | it was Sunday | Liv had a cold",
+    "The dog heard a noise. He ran to the door and barked. It was just the mailman. | Who was at the door? | the mailman | Grandma | a cat | It was just the mailman",
+    "Ann planted a tree with her grandpa. They dug a deep hole. Then they gave the tree water. | Who planted the tree with Ann? | her grandpa | her mom | her teacher | with her grandpa",
+    "Jack went to the library. He picked a book about sharks. He took it home to read. | What was the book about? | sharks | dinosaurs | trucks | a book about sharks",
+    "The leaves turned red and orange. They fell from the trees. Zoe jumped in a big pile of them. | What did Zoe jump in? | a pile of leaves | a puddle | a pile of snow | Zoe jumped in a big pile of them",
+    "Sam and Ben raced to the swings. Ben got there first. Sam came in second. | Who won the race? | Ben | Sam | Mia | Ben got there first",
+    "Mom took us to the pool. My sister swam with a float. I swam all by myself. | Who swam with a float? | my sister | Mom | me | My sister swam with a float",
+    "Zib landed his spaceship in a park. A dog came up and sniffed him. Zib gave the dog a moon cookie. | What did Zib give the dog? | a moon cookie | a bone | a ball | Zib gave the dog a moon cookie",
+    "It snowed all night. In the morning, Kim made a snowman. She gave it a hat and a scarf. | When did Kim make the snowman? | in the morning | at night | after lunch | In the morning, Kim made a snowman",
+    "Tom has a toy train. It goes around a track. When he pushes a button, it says choo choo. | What happens when Tom pushes the button? | it says choo choo | it stops | it lights up | it says choo choo",
+    "The class has a pet hamster. His name is Peanut. Each week a different kid takes care of him. | What is the name of the hamster? | Peanut | Rex | Fluffy | His name is Peanut",
+    "Mia was painting. She spilled blue paint on the floor. She cleaned it up with a towel. | What did Mia spill? | blue paint | red paint | her milk | She spilled blue paint",
+    "Dad and I went camping. We slept in a tent. At night we looked at the stars. | Where did they sleep? | in a tent | in a cabin | in the car | We slept in a tent",
+    "Liv lost her first tooth. She put it under her pillow. In the morning she found a coin. | What did Liv find in the morning? | a coin | her tooth | a note | she found a coin",
+    "A spider made a web in the corner. It caught a fly. Then the spider ate it. | What did the web catch? | a fly | a bee | a leaf | It caught a fly",
+    "Grandma came to visit. She brought a puzzle. We put it together on the floor. | What did Grandma bring? | a puzzle | a cake | a game | She brought a puzzle",
+    "Ben woke up late. He ate breakfast fast. He still made it to the bus on time. | Why did Ben eat fast? | he woke up late | he was hungry | the food was cold | Ben woke up late",
+    "The cat climbed up a tall tree. It could not get down. A firefighter used a ladder to help it. | Who helped the cat? | a firefighter | a dog | a bird | A firefighter used a ladder",
+    "order: Mia got out the bread. She put jam on it. Then she ate her snack. | Mia got the bread / Mia put on jam / Mia ate her snack",
+    "order: Ben put on his socks. Next he put on his shoes. Last, he tied the laces. | Ben put on his socks / Ben put on his shoes / Ben tied the laces",
+    "order: The seed went in the dirt. Rain fell on it. Then a little plant came up. | The seed went in the dirt / Rain fell on it / A plant came up",
+    "order: Kim filled the tub with water. She hopped in with her duck. Then she washed her hair. | Kim filled the tub / Kim hopped in / Kim washed her hair",
+    "order: The egg cracked. A tiny beak poked out. Then a chick hopped out. | The egg cracked / A beak poked out / A chick hopped out",
+    "order: Max made a snowball. He threw it at the tree. It hit the tree and broke apart. | Max made a snowball / Max threw it / It hit the tree",
+    "order: Zoe found a lost puppy. She looked at the name on its tag. She took it back to its home. | Zoe found a puppy / Zoe looked at the tag / Zoe took it home",
+    "order: Dad mixed the batter. He poured it in the pan. Then he baked a cake. | Dad mixed the batter / Dad poured it in the pan / Dad baked the cake",
+    "order: Sam woke up. He ate his breakfast. Then he got on the bus. | Sam woke up / Sam ate breakfast / Sam got on the bus",
+    "order: The caterpillar ate lots of leaves. It made a cocoon. Then it came out as a butterfly. | It ate leaves / It made a cocoon / It came out as a butterfly",
+    "yes: Liv wanted to play outside. She looked out the window. It was raining hard, so she played a game. | Did Liv play outside? | No | It was raining hard, so she played a game",
+    "yes: Tom saw a bug on the path. He bent down to look. It was a shiny green beetle. | Was the bug a beetle? | Yes | It was a shiny green beetle",
+    "yes: Ann made a card for her mom. She drew hearts on it. Her mom hung it on the fridge. | Did Ann draw stars on the card? | No | She drew hearts on it",
+    "yes: The class planted beans. They watered them every day. After a week, the beans began to grow. | Did the beans grow? | Yes | the beans began to grow",
+    "yes: Jack wanted to win the race. He ran as fast as he could. But Zoe was faster. | Did Jack win the race? | No | But Zoe was faster",
+    "yes: Kim found a kitten. It was wet and cold. She wrapped it in a towel. | Was the kitten wet? | Yes | It was wet and cold",
+    "yes: Max went to the store with Dad. They needed eggs and milk. Max carried the eggs. | Did Dad carry the eggs? | No | Max carried the eggs",
+    "yes: Grandma came for dinner. She brought a big pie. Everyone had a slice. | Did everyone get some pie? | Yes | Everyone had a slice",
+    "Zib has a pet moon bug. It glows at night. Zib uses it as a night light. | What glows at night? | the moon bug | the moon | the rocket | It glows at night",
+    "Ben went to the park. He played on the slide. Then he fed the ducks. | What did Ben feed? | the ducks | the dog | the fish | he fed the ducks",
+    "Mia has a red wagon. She pulls her teddy bear in it. They go all around the yard. | What does Mia pull in her wagon? | her teddy bear | her cat | her baby | She pulls her teddy bear in it",
+    "The family went on a picnic. They sat on a blanket by the lake. They ate sandwiches. | Where did they sit? | on a blanket | on a bench | in the car | They sat on a blanket",
+    "Liv wanted a pet. Her mom said she could get a fish. Liv named it Bubbles. | What did Liv name her fish? | Bubbles | Spot | Goldie | Liv named it Bubbles",
+    "Tom built a fort with blocks. His dog knocked it over. Tom laughed and built it again. | Who knocked the fort over? | his dog | his sister | Tom | His dog knocked it over"
+  ]},
+  { name:"Think about it", ex:"How do they feel? What next?", raw:[
+    "Sam dropped his ice cream on the ground. His lip shook and he began to cry. | How does Sam feel? | sad | happy | sleepy | he began to cry",
+    "Mia put on her coat, hat, and mittens. She could see her breath in the air. | What is the weather like? | cold | hot | rainy | She could see her breath",
+    "Ben yawned and rubbed his eyes. He could not stop yawning. | How does Ben feel? | sleepy | angry | scared | Ben yawned and rubbed his eyes",
+    "Kim grabbed her umbrella and her rain boots before she went out. | What is the weather like? | rainy | sunny | hot | her umbrella and her rain boots",
+    "The dark clouds rolled in. There was a loud boom, and the lights flashed. | What is happening? | a storm | a party | a parade | There was a loud boom",
+    "Max jumped up and down and cheered. He gave his team a high five. | How does Max feel? | happy | sad | tired | jumped up and down and cheered",
+    "The glass was on the edge of the table. The cat swished its tail and bumped it. | What will happen next? | the glass will fall | the cat will sleep | the glass will fill up | on the edge of the table",
+    "Liv heard a creak in the dark. She pulled the blanket over her head. | How does Liv feel? | scared | silly | hungry | She pulled the blanket over her head",
+    "Tom had not eaten all day. His tummy growled loudly. | How does Tom feel? | hungry | full | cold | His tummy growled",
+    "Zoe put on her swimsuit and grabbed a towel. Dad packed a bucket and a shovel. | Where are they going? | to the beach | to school | to the store | a bucket and a shovel",
+    "Ann saw a box with holes in the top. Something inside said meow! | What is in the box? | a kitten | a puppy | a bird | said meow",
+    "Jack held the string. His kite went up, up, up into the sky. | What kind of day is it? | a windy day | a snowy day | a rainy day | His kite went up, up, up",
+    "The candles were lit, and everyone sang to Mia. She took a big breath. | What will Mia do next? | blow out the candles | go to sleep | eat a pickle | She took a big breath",
+    "Sam built a tall tower of blocks. His baby brother crawled over to it. | What might happen next? | the tower falls down | the tower grows | Sam goes to bed | His baby brother crawled over to it",
+    "Kim put the seeds in the dirt. Every day she gave them water. | What will happen to the seeds? | they will grow | they will melt | they will fly | Every day she gave them water",
+    "The puppy licked Ben on the nose and wagged its tail. | How does the puppy feel? | happy | mad | sad | wagged its tail",
+    "Max put on his pajamas and brushed his teeth. Mom turned off the light. | What time is it? | bedtime | lunchtime | playtime | put on his pajamas",
+    "Liv left her cookie on the table. When she came back, it was gone. The dog had crumbs on his nose. | Who ate the cookie? | the dog | Liv | the cat | The dog had crumbs on his nose",
+    "Zib looked out of his spaceship. He saw a big blue and green ball with white clouds. | What did Zib see? | the Earth | the sun | the moon | a big blue and green ball with white clouds",
+    "Ben made a mess with his paints. He said sorry and cleaned it all up. | What kind of kid is Ben? | helpful | mean | lazy | cleaned it all up",
+    "Tom wore shorts and sunglasses. He drank lots of cold water. | What is the weather like? | hot | cold | snowy | Tom wore shorts and sunglasses",
+    "Mia gave half of her sandwich to a friend who forgot lunch. | What kind of friend is Mia? | kind | mean | silly | gave half of her sandwich",
+    "The ice cream sat in the sun for a long time. | What will happen to the ice cream? | it will melt | it will freeze | it will grow | sat in the sun for a long time",
+    "Kim stood at the top of the tall slide. Her hands shook, and she did not want to go down. | How does Kim feel? | scared | bored | happy | Her hands shook",
+    "Dad looked at the flat tire. He got out a pump. | What will Dad do? | fill the tire with air | buy a new car | eat lunch | He got out a pump",
+    "Sam heard the ice cream truck. He ran to get his money. | What does Sam want? | ice cream | a new toy | a nap | heard the ice cream truck",
+    "order: Before Mia went to bed, she brushed her teeth. After that she looked at a book. | Mia brushed her teeth / Mia looked at a book / Mia went to bed",
+    "order: Ben ate lunch after he washed his hands. Then he went out to play. | Ben washed his hands / Ben ate lunch / Ben went out to play",
+    "order: Kim put on her helmet before she rode her bike. When she got home, she put the bike away. | Kim put on her helmet / Kim rode her bike / Kim put the bike away",
+    "order: Before the game, Max put on his uniform. After the game, his team had pizza. During the game, he kicked a goal. | Max put on his uniform / Max kicked a goal / The team had pizza",
+    "order: Zoe planted the seed after she dug a hole. Last, she gave it water. | Zoe dug a hole / Zoe planted the seed / Zoe gave it water",
+    "order: The ice cream melted after it sat in the sun. Sam had left it on the step after he went inside. | Sam went inside / It sat in the sun / The ice cream melted",
+    "yes: Tom had a big smile. He got a new puppy today. | Is Tom happy? | Yes | Tom had a big smile",
+    "yes: Liv put on her coat and boots. Snow was falling. | Is it a hot day? | No | Snow was falling",
+    "yes: Ben could not reach the cookie jar. He got a chair to stand on. | Is the cookie jar up high? | Yes | could not reach the cookie jar",
+    "yes: Mia stomped her feet and crossed her arms. Her brother took her toy. | Is Mia happy? | No | stomped her feet and crossed her arms",
+    "yes: The baby rubbed her eyes and yawned. | Is the baby sleepy? | Yes | rubbed her eyes and yawned",
+    "yes: Max looked at the empty bowl. There was no more cereal. | Can Max have more cereal? | No | There was no more cereal",
+    "yes: Kim heard thunder and saw dark clouds. She ran inside. | Is a storm coming? | Yes | heard thunder and saw dark clouds",
+    "yes: Jack shared his crayons with a new kid. They drew pictures together. | Was Jack being kind? | Yes | shared his crayons",
+    "The dog ran to the door and wagged his tail. He heard the car in the driveway. | Who do you think is home? | someone from the family | a bear | a fish | He heard the car in the driveway",
+    "Ann packed a towel, sunscreen, and a pail. | Where is Ann going? | to the beach | to the library | to bed | sunscreen, and a pail",
+    "The leaves turned red and gold. They fell from the trees. | What season is it? | fall | spring | summer | The leaves turned red and gold",
+    "Ben looked at the clock. It was time for school, but he could not find his backpack. | How does Ben feel? | worried | sleepy | silly | he could not find his backpack",
+    "Mia blew out the candles. Everyone clapped and sang. | What is happening? | a birthday party | a storm | a nap | Mia blew out the candles",
+    "Tom put on a cape and a mask. He said he could fly! | What is Tom pretending to be? | a superhero | a fish | a teacher | a cape and a mask",
+    "Zoe got a gold medal. She had run the fastest. | What did Zoe do? | won a race | lost a race | took a nap | She had run the fastest",
+    "The snowman got smaller and smaller. There was a puddle around it. | What is happening to the snowman? | it is melting | it is growing | it is dancing | There was a puddle around it",
+    "Dad got out a bowl, flour, and eggs. He turned on the oven. | What is Dad going to do? | bake something | wash the car | go to sleep | He turned on the oven",
+    "Liv whispered and walked on her tiptoes. The baby was asleep. | Why is Liv quiet? | the baby is asleep | she is sick | she lost her voice | The baby was asleep"
+  ]},
+  { name:"Longer stories", ex:"Four or five sentences", raw:[
+    "Mia and Dad went to the pond. They brought bread for the ducks. A big goose came over too. It honked and chased Dad! Mia laughed and laughed. | Who chased Dad? | the goose | a duck | Mia | It honked and chased Dad",
+    "order: Zib woke up in his spaceship. He ate a bowl of star flakes. Then he flew to the moon. On the moon, he planted a flag. | Zib ate star flakes / Zib flew to the moon / Zib planted a flag",
+    "yes: Ben wanted to make a lemonade stand. He squeezed lemons and added sugar. He made a sign. Lots of people came to buy a cup. | Did people buy his lemonade? | Yes | Lots of people came to buy a cup",
+    "Kim lost her red mitten at school. She looked in her desk. She looked in the gym. At last, her teacher found it in the lunch room. | Where was the mitten? | in the lunch room | in her desk | in the gym | found it in the lunch room",
+    "The class went to the farm. They saw cows, pigs, and sheep. Max got to milk a cow. Liv fed a baby goat with a bottle. | Who fed the baby goat? | Liv | Max | the farmer | Liv fed a baby goat",
+    "order: Tom planted a pumpkin seed in the spring. All summer, he watered it. In the fall, the pumpkin was big and orange. He carved a face on it. | Tom planted a seed / Tom watered it all summer / Tom carved a face",
+    "Ann practiced the piano every day. Her hands got tired, but she kept going. At the show, she played her song with no mistakes. Everyone stood up and clapped. | How does Ann feel at the end? | proud | sad | sleepy | Everyone stood up and clapped",
+    "yes: Jack and his dad went fishing early in the morning. They sat in the boat for a long time. The fish did not bite. They went home with an empty bucket. | Did they catch any fish? | No | an empty bucket",
+    "Zoe wanted to surprise her mom. She picked flowers from the garden. She put them in a jar of water. Then she set them on the table. | What did Zoe pick? | flowers | apples | berries | She picked flowers",
+    "pic: A girl and her dog went to the beach. The dog dug in the sand. The girl built a castle next to the dog. | dog+castle | cat+castle | dog+house | built a castle next to the dog",
+    "It was the first day of school. Sam felt a little scared. Then he met a boy named Leo. They played on the swings together. By lunch, Sam was smiling. | How did Sam feel at the end? | happy | scared | angry | Sam was smiling",
+    "order: The bus stopped at the zoo. First the kids saw the lions. Next they watched the seals swim. Last, they ate lunch by the giraffes. | They saw the lions / They watched the seals / They ate lunch by the giraffes",
+    "Mom made a list of milk, eggs, and apples. At the store, Ben pushed the cart. He found the eggs and the milk. But they forgot the apples! | What did they forget? | apples | eggs | milk | they forgot the apples",
+    "yes: Liv had a loose tooth for a week. She wiggled it all day. At dinner, she bit into an apple. Out came the tooth! | Did the tooth come out at dinner? | Yes | At dinner, she bit into an apple",
+    "A storm knocked out the lights. The house was very dark. Dad found a flashlight. The family told stories by its light until the power came back. | What did Dad find? | a flashlight | a candle | a lamp | Dad found a flashlight",
+    "Max saw a big kid knock over a little boy. Max helped the little boy up. He walked him to the nurse. | What kind of kid is Max? | kind | mean | lazy | Max helped the little boy up",
+    "order: Kim mixed red and yellow paint. It turned orange. Then she added white. Now it was a light orange, like a peach. | Kim mixed red and yellow / The paint turned orange / Kim added white",
+    "Our cat Tiger likes to hide. Today we could not find him anywhere. We looked under the bed and in the closet. At last we found him asleep in the laundry basket. | Where was Tiger? | in the laundry basket | under the bed | in the closet | asleep in the laundry basket",
+    "yes: Ben and Mia built a sand castle. Ben made the walls. Mia dug a moat around it. Then the water filled the moat. | Did Ben dig the moat? | No | Mia dug a moat",
+    "Zib visited Earth for the first time. He saw a dog and thought it was a tiny alien. He said hello in alien words. The dog just licked his face. | What did Zib think the dog was? | a tiny alien | a robot | a cat | thought it was a tiny alien",
+    "Grandpa came in from outside. His nose was red and his hat was covered in snow. He rubbed his hands together fast. | How does Grandpa feel? | cold | hot | hungry | He rubbed his hands together fast",
+    "pic: The farmer drove his tractor to the barn. A rooster sat on top of it and crowed. | tractor+rooster | tractor+duck | truck+rooster | A rooster sat on top of it",
+    "Tom wanted to be in the play. He had to learn his lines. Every night, he said them to his mom. On the night of the play, he did not forget a single word. | What did Tom have to learn? | his lines | a dance | a song | He had to learn his lines",
+    "yes: The kids had a bake sale for the animal shelter. They sold cookies and cupcakes. They made forty dollars. They gave it all to the shelter. | Did the kids keep the money? | No | They gave it all to the shelter"
+  ]}
+];
+var Q_ORDER = "What happened first, next, and last?", Q_PIC = "Which picture shows the story?";
+function parse(line){
+  var m = /^(yes|order|pic): /.exec(line), kind = m ? m[1] : "wh", f = line.slice(m ? m[0].length : 0).split(" | ");
+  if (kind === "yes") return { kind:kind, story:f[0], q:f[1], a:f[2], wrong:[f[2] === "Yes" ? "No" : "Yes"], clue:f[3] };
+  if (kind === "order") return { kind:kind, story:f[0], q:Q_ORDER, events:f[1].split(" / "), clue:"" };
+  if (kind === "pic") return { kind:kind, story:f[0], q:Q_PIC, a:f[1], wrong:[f[2], f[3]], clue:f[4] };
+  return { kind:kind, story:f[0], q:f[1], a:f[2], wrong:[f[3], f[4]], clue:f[5] };
+}
+LEVELS.forEach(function(L){ L.items = L.raw.map(parse); });
+var INSTR = { wh:["Read the story. Then tap the answer.", "i_read_answer"], yes:["Read the story. Then tap yes or no.", "i_read_yesno"],
+  order:["Read the story. Then tap what happened first, next, and last.", "i_read_order"], pic:["Read the story. Then tap the picture that shows it.", "i_read_pic"] };
+/* the pictures (Picture Planet's words and emoji) */
+var PICS = {alien:"1f47d", ant:"1f41c", apple:"1f34e", baby:"1f476", balloon:"1f388", banana:"1f34c", beach:"1f3d6", bed:"1f6cf", bee:"1f41d", boat:"26f5", bone:"1f9b4", box:"1f4e6", bucket:"1faa3", bug:"1f41b", cake:"1f382", castle:"1f3f0", cat:"1f431", chair:"1fa91", couch:"1f6cb", cow:"1f404", crab:"1f980", crown:"1f451", cup:"2615", dog:"1f436", drum:"1f941", duck:"1f986", fish:"1f41f", fox:"1f98a", frog:"1f438", goat:"1f410", guitar:"1f3b8", hat:"1f3a9", hen:"1f414", house:"1f3e0", ice:"1f9ca", kite:"1fa81", ladybug:"1f41e", lion:"1f981", monkey:"1f412", moon:"1f319", nest:"1faba", owl:"1f989", pancakes:"1f95e", penguin:"1f427", phone:"1f4f1", pie:"1f967", pig:"1f437", pizza:"1f355", rabbit:"1f430", robot:"1f916", rooster:"1f413", rose:"1f339", scarf:"1f9e3", shark:"1f988", shell:"1f41a", snail:"1f40c", snowman:"26c4", sock:"1f9e6", spider:"1f577", sun:"2600", tent:"26fa", tractor:"1f69c", tree:"1f333", truck:"1f69a", tub:"1f6c1", turtle:"1f422", waffle:"1f9c7"};
+var ROUNDS = 8;
+var COLORS = ["#FFC93C","#FF8A3D","#E5487A","#3FB37F","#4BA3D9","#9B7BE0"];
+
+function load(k, d){ try { var v = localStorage.getItem("read:" + k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } }
+function save(k, v){ try { localStorage.setItem("read:" + k, JSON.stringify(v)); } catch(e){} }
+var best = load("best", {});
+var recent = load("recent", {});   // per level, the stories played lately: the next level game picks others first
+
+/* ---------- level list ---------- */
+function renderHome(){
+  var path = $("path"); path.innerHTML = "";
+  LEVELS.forEach(function(L, i){
+    var b = el("button", "paper press stone"), got = best[i];
+    b.innerHTML = '<span class="num" style="background:' + COLORS[i] + '">' + (i + 1) + '</span>' +
+      '<span class="sname">' + L.name + '</span><span class="ex">' + L.ex + '</span>' +
+      '<span class="best">' + (got === undefined ? "Not played yet" : 'Best: <b>&#9733; ' + got + '</b> of ' + ROUNDS) + '</span>';
+    b.onclick = function(){ startLevel(i); };
+    path.appendChild(b);
+  });
+}
+function goBack(){ Speech.stop(); if (hasClass($("home"), "on")) location.href = "words.html"; else { G = null; renderHome(); show("home"); } }
+$("backBtn").onclick = goBack;
+window.goBack = goBack;
+
+/* ---------- playing ---------- */
+var G = null;
+/* 8 stories, the ones not played lately first (each level has about 50), at least one of each kind
+   of question the level has, never the same story twice */
+function pickStories(level){
+  var items = LEVELS[level].items, seen = recent[level] || [], fresh = [], old = [], pickIdx = [], stories = {};
+  shuffle(items.map(function(x, i){ return i; })).forEach(function(i){ (seen.indexOf(i) >= 0 ? old : fresh).push(i); });
+  var order = fresh.concat(old);
+  function take(i){ if (pickIdx.length < ROUNDS && pickIdx.indexOf(i) < 0 && !stories[items[i].story]){ pickIdx.push(i); stories[items[i].story] = 1; } }
+  ["yes", "order", "pic"].forEach(function(k){ for (var j = 0; j < order.length; j++) if (items[order[j]].kind === k){ take(order[j]); break; } });
+  order.forEach(take);
+  pickIdx = shuffle(pickIdx);
+  recent[level] = seen.concat(pickIdx).slice(-(items.length - ROUNDS)); save("recent", recent);
+  return pickIdx.map(function(i){ return items[i]; });
+}
+function startLevel(i){
+  G = { level:i, items:pickStories(i), round:0, stars:0, results:[] };
+  show("game");
+  renderRound();
+}
+function renderDots(){
+  var d = $("dots"); d.innerHTML = "";
+  for (var i = 0; i < ROUNDS; i++){
+    var r = G.results[i];
+    d.appendChild(el("span", "dot" + (r === "gold" ? " gold" : r === "ok" ? " ok" : i === G.round ? " now" : "")));
+  }
+  $("stars").innerHTML = "&#9733; " + G.stars;
+}
+function renderRound(){
+  var it = G.items[G.round], R = { it:it, misses:0, done:false, step:0 };
+  G.R = R;
+  renderDots();
+  var stage = $("stage"); stage.innerHTML = "";
+  var hr = el("div", "hintrow"), instr = INSTR[it.kind];
+  hr.appendChild(el("p", "hint", Speech.tapText(instr[0])));
+  if (Speech.canTalk()){
+    var sb = el("button", "press sayb flex", '<img src="emoji/1f50a.svg" alt="">');
+    sb.setAttribute("aria-label", "Hear the instructions");
+    sb.onclick = function(){ say([instr[1]]); };
+    hr.appendChild(sb);
+  }
+  stage.appendChild(hr);
+  var at = it.story.indexOf(it.clue);
+  var story = el("div", "paper story");
+  story.innerHTML = Speech.tapText(it.story.slice(0, at)) + '<span class="ev">' + Speech.tapText(it.clue) + '</span>' + Speech.tapText(it.story.slice(at + it.clue.length));
+  stage.appendChild(story);
+  stage.appendChild(el("p", "qline", Speech.tapText(it.q)));
+  var ch = el("div", "choices " + it.kind);
+  R.btns = [];
+  if (it.kind === "order"){
+    shuffle(it.events.map(function(e, i){ return i; })).forEach(function(i){
+      var b = el("button", "paper press choice", '<span class="ordnum"></span>' + it.events[i]);
+      b.setAttribute("data-ord", i);
+      b.onclick = function(){ tapOrder(R, b, i); };
+      R.btns[i] = b; ch.appendChild(b);
+    });
+  } else {
+    var opts = [it.a].concat(it.wrong);
+    (it.kind === "yes" ? ["Yes", "No"] : shuffle(opts)).forEach(function(c){
+      var b = el("button", "paper press choice", it.kind === "pic" ? picHtml(c) : c);
+      b.setAttribute("data-ans", c);
+      b.onclick = function(){ answer(R, b, c); };
+      if (c === it.a) R.right = b;
+      ch.appendChild(b);
+    });
+  }
+  stage.appendChild(ch);
+  R.story = story; R.choices = ch;
+  fitStory();
+  if (G.round === 0 || it.kind !== G.lastKind) setTimeout(function(){ if (G && G.R === R) say([instr[1]]); }, 400);
+  G.lastKind = it.kind;
+}
+/* squarer screens than the frame's (4:3 tablets): a long story gets smaller text until it all fits */
+function fitStory(){
+  var R = G && G.R, stage = $("stage");
+  if (!R || !R.story || !stage.firstChild) return;
+  R.story.style.fontSize = "";
+  var box = stage.getBoundingClientRect();
+  for (var n = 0; n < 8; n++){
+    if (stage.firstChild.getBoundingClientRect().top >= box.top - 1 && stage.lastChild.getBoundingClientRect().bottom <= box.bottom + 1) return;
+    R.story.style.fontSize = (parseFloat(window.getComputedStyle(R.story).fontSize) * 0.94) + "px";
+  }
+}
+window.addEventListener("resize", fitStory, false);
+/* "frog+log": the two pictures side by side */
+function picHtml(c){
+  return c.split("+").map(function(w){ return '<img src="emoji/' + PICS[w] + '.svg" alt="">'; }).join("");
+}
+function answer(R, b, c){
+  if (!G || G.R !== R || R.done || hasClass(b, "wrong")) return;
+  if (c !== R.it.a){
+    R.misses++; addClass(b, "wrong");
+    removeClass(R.choices, "nope"); void R.choices.offsetWidth; addClass(R.choices, "nope");
+    // yes or no has only one wrong answer: show it right away
+    if (R.misses < 2 && R.it.kind !== "yes"){ say(["p_try"]); return; }
+    finish(R, ["p_story_says"]);
+    return;
+  }
+  finish(R, ["p_praise_" + Math.floor(Math.random()*6)]);
+}
+/* order: tap the first thing that happened, then the next, then the last; 2 misses show the order */
+function tapOrder(R, b, i){
+  if (!G || G.R !== R || R.done || hasClass(b, "right")) return;
+  if (i === R.step){
+    mark(R, i);
+    if (R.step === R.it.events.length) finish(R, ["p_praise_" + Math.floor(Math.random()*6)]);
+    else say([["p_first", "p_next"][i]]);
+    return;
+  }
+  R.misses++;
+  removeClass(b, "wrong"); void b.offsetWidth; addClass(b, "wrong");
+  setTimeout(function(){ removeClass(b, "wrong"); }, 700);
+  removeClass(R.choices, "nope"); void R.choices.offsetWidth; addClass(R.choices, "nope");
+  if (R.misses < 2){ say(["p_try"]); return; }
+  while (R.step < R.it.events.length) mark(R, R.step);
+  finish(R, ["p_order_shown"]);
+}
+function mark(R, i){
+  var b = R.btns[i];
+  b.querySelector(".ordnum").innerHTML = String(i + 1);
+  addClass(b, "right"); R.step = i + 1;
+}
+/* right (or 2 misses): light up the clue in the story, then the next story */
+function finish(R, keys){
+  R.done = true;
+  if (R.right) addClass(R.right, "right");
+  addClass(R.story, "show");
+  var clean = R.misses === 0;
+  if (clean) G.stars++;
+  G.results[G.round] = clean ? "gold" : "ok";
+  renderDots();
+  var moved = false;
+  function next(){ if (moved || !G || G.R !== R) return; moved = true; G.round++; if (G.round >= ROUNDS) showEnd(); else Ways.between(renderRound); }
+  say(keys, function(){ setTimeout(next, R.misses ? 2600 : 1400); });
+  setTimeout(next, 9000);
+}
+function showEnd(){
+  var i = G.level, s = G.stars;
+  if (best[i] === undefined || s > best[i]){ best[i] = s; save("best", best); }
+  $("endTitle").textContent = s === ROUNDS ? "Perfect!" : s >= 6 ? "Super reading!" : "Level done!";
+  $("endScore").innerHTML = "You earned <b>&#9733; " + s + "</b> of " + ROUNDS + " stars.";
+  var btns = $("endBtns"); btns.innerHTML = "";
+  var again = el("button", "paper press bigbtn", "Play again"); again.onclick = function(){ startLevel(i); }; btns.appendChild(again);
+  if (i < LEVELS.length - 1){
+    var nx = el("button", "paper press bigbtn go", "Next: " + LEVELS[i + 1].name); nx.onclick = function(){ startLevel(i + 1); }; btns.appendChild(nx);
+  }
+  var all = el("button", "paper press bigbtn", "All levels"); all.onclick = function(){ renderHome(); show("home"); }; btns.appendChild(all);
+  show("end");
+  say([s === ROUNDS ? "p_perfect" : "p_stars_" + s]);
+}
+
+(function(){
+  var sky = $("sky");
+  for (var i = 0; i < 70; i++){
+    var st = el("span", "star"), size = Math.random() < 0.15 ? 0.6 : 0.3;
+    st.style.left = (Math.random()*100) + "%"; st.style.top = (Math.random()*100) + "%";
+    st.style.width = st.style.height = size + "vmin";
+    st.style.webkitAnimationDelay = st.style.animationDelay = (Math.random()*3) + "s";
+    sky.appendChild(st);
+  }
+})();
+
+/* hooks for automated tests (harmless on the frame) */
+window.ReadAnswer = { levels:LEVELS, rounds:ROUNDS, pics:PICS, state:function(){ return G; }, start:startLevel,
+  render:function(it){ G.items[G.round] = it; renderRound(); } };
+
+document.addEventListener("touchstart", function(){}, true);
+renderHome();
+})();
+</script>
+<script src="pwa.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Space Words</title>
+<link rel="stylesheet" href="hub.css">
+<link rel="stylesheet" href="back.css">
+<style>.games{margin-bottom:3.4vmin}</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0B1026">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Space Words">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+</head>
+<body>
+<button class="backbtn" id="backBtn" aria-label="Back"><b>&#8592;</b>Back</button>
+<div class="top backroom"><h1>Pick a mission</h1></div>
+<div class="games">
+  <button class="game c1" data-go="words.html" data-stars="wordhop:best saucer:best match:connect:best match:rhyme:best sound:best compound:best classwords:best">
+    <img src="emoji/1f4da.svg" alt="">
+    <span class="t">Word games</span>
+    <span class="d">Read, listen, and spell</span>
+    <span class="got"></span>
+  </button>
+  <button class="game c2 alt" data-go="math.html" data-stars="math:count:best math:ops:best math:pattern:best">
+    <span class="art"><img src="emoji/1fa90.svg" alt=""><span class="nums"><b class="k1">1</b><b class="op">+</b><b class="k2">2</b><b class="op">=</b><b class="k3">3</b></span></span>
+    <span class="t">Math games</span>
+    <span class="d">Count, add, and crack the code</span>
+    <span class="got"></span>
+  </button>
+</div>
+<!-- turn timer: 5 minutes each, then "Switch turns!" (filled in by speech.js) -->
+<div class="turnbar" id="turnbar"></div>
+<!-- grown-ups: hold to open, then hide Space Words for a few hours (hub.js; HideTimer.kt) -->
+<div class="adultrow"><button class="adultbtn" id="adultBtn"><i class="fill" id="adultFill"></i><span>Grown-ups (hold)</span></button></div>
+<div class="hidepop" id="hidePop" style="display:none">
+  <div class="hidecard">
+    <h2>Hide Space Words</h2>
+    <p id="hideMsg">The UFO goes away for a while and comes back by itself, even after a restart.</p>
+    <div class="hours" id="hideHours"></div>
+    <button class="hidecancel" id="hideCancel">Cancel</button>
+  </div>
+</div>
+<script src="speech.js"></script>
+<script src="hub.js"></script>
+<script src="pwa.js"></script>
+</body>
+</html>

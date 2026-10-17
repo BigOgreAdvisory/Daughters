@@ -2,25 +2,27 @@ import { test, expect } from '@playwright/test';
 import { ALE_GAMES, ANA_GAMES, stubSpeech, guard, seedAle, openAleGame, playAnaSession, checkLayout, NO_ANIM } from './helpers.js';
 
 /* ---------------- root chooser ---------------- */
-test('root chooser links to both apps and registers no service worker', async ({ page, request }) => {
+test('root chooser links to all three apps and registers no service worker', async ({ page, request }) => {
   const g = guard(page);
   await page.goto('./');
-  await expect(page.locator('a.kid')).toHaveCount(2);
+  await expect(page.locator('a.kid')).toHaveCount(3);
   expect(await page.locator('a.ale').getAttribute('href')).toBe('./ale/');
   expect(await page.locator('a.ana').getAttribute('href')).toBe('./ana/');
+  expect(await page.locator('a.space').getAttribute('href')).toBe('./spacewords/');
   await page.waitForTimeout(500);
   expect(await page.evaluate(() => navigator.serviceWorker.getRegistrations().then(r => r.length))).toBe(0);
-  for(const app of ['ale','ana']){
+  for(const app of ['ale','ana','spacewords']){
     const m = await (await request.get(`${app}/manifest.webmanifest`)).json();
-    expect(m.start_url).toBe('./'); expect(m.scope).toBe('./');
-    expect(m.name).toBe(app === 'ale' ? "Ale's Games" : "Ana's Games");
+    expect(m.start_url).toBe(app === 'spacewords' ? './index.html' : './'); expect(m.scope).toBe('./');
+    expect(m.name).toBe({ale:"Ale's Games", ana:"Ana's Games", spacewords:'Space Words'}[app]);
     for(const ic of m.icons) expect((await request.get(`${app}/${ic.src}`)).status()).toBe(200);
   }
   g.check();
 });
 
 test('no absolute paths anywhere (site lives under /Daughters/)', async ({ request }) => {
-  for(const f of ['index.html','ale/index.html','ana/index.html','ale/sw.js','ana/sw.js','ale/js/engine.js','ale/manifest.webmanifest','ana/manifest.webmanifest']){
+  for(const f of ['index.html','ale/index.html','ana/index.html','ale/sw.js','ana/sw.js','ale/js/engine.js','ale/manifest.webmanifest','ana/manifest.webmanifest',
+    'spacewords/index.html','spacewords/words.html','spacewords/sw.js','spacewords/pwa.js','spacewords/speech.js','spacewords/manifest.webmanifest']){
     const txt = await (await request.get(f)).text();
     expect(txt, f).not.toMatch(/(href|src)="\/(?!\/)/);
     expect(txt, f).not.toMatch(/register\(['"]\//);

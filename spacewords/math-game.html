@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="parent" content="math.html">
+<title>Math games</title>
+<style>
+@font-face{font-family:"WHFun";src:url("fonts/fredoka.ttf") format("truetype");font-weight:600}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:#0B1026;background-image:radial-gradient(circle at 75% 15%, #2A1E5C 0%, #131A3D 45%, #0B1026 80%);color:#F3F6FF;font-family:"WHFun","Trebuchet MS",sans-serif;font-weight:600;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:rgba(0,0,0,0);overflow:hidden;
+}
+button{font-family:inherit;font-weight:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer;outline:none}
+img{display:block}
+.screen{display:none;position:absolute;left:0;top:0;right:0;bottom:0;padding:3vmin 4vmin;overflow:hidden;z-index:1}
+.screen.on{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
+.paper{background:#F7F9FF;color:#1F2A44;border:0.5vmin solid #1F2A44;border-radius:2.8vmin;box-shadow:0.8vmin 0.8vmin 0 #05081A}
+.press{-webkit-transition:-webkit-transform .08s,box-shadow .08s;transition:transform .08s,box-shadow .08s}
+.press:active{-webkit-transform:translate(0.5vmin,0.5vmin);transform:translate(0.5vmin,0.5vmin);box-shadow:0.3vmin 0.3vmin 0 #05081A}
+.flex{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center}
+
+/* level list */
+.hero{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;margin:2vmin 0 4vmin}
+.hero img{width:12vmin;height:12vmin;-webkit-flex:none;flex:none;margin-right:3vmin;-webkit-animation:hop 1.6s ease-out 1;animation:hop 1.6s ease-out 1}
+@-webkit-keyframes hop{0%{-webkit-transform:translateY(5vmin) scale(.6);opacity:0}35%{-webkit-transform:translateY(-5vmin) scale(1.05);opacity:1}55%{-webkit-transform:translateY(0) scaleY(.88)}70%{-webkit-transform:translateY(-1.5vmin)}100%{-webkit-transform:none}}
+@keyframes hop{0%{transform:translateY(5vmin) scale(.6);opacity:0}35%{transform:translateY(-5vmin) scale(1.05);opacity:1}55%{transform:translateY(0) scaleY(.88)}70%{transform:translateY(-1.5vmin)}100%{transform:none}}
+.hero h1{margin:0;font-size:9vmin;line-height:1;font-weight:600;color:#FFD93D;text-shadow:0.6vmin 0.6vmin 0 #05081A}
+.hero p{margin:1vmin 0 0;font-size:3.6vmin;color:#B9C3F2}
+.path{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin:0 -1.2vmin}
+.stone{width:18%;margin:1.2vmin 1%;padding:2.2vmin 2.4vmin;text-align:left;min-height:26vmin;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
+.num{width:7vmin;height:7vmin;border-radius:50%;border:0.5vmin solid #1F2A44;font-size:3.6vmin;line-height:6vmin;text-align:center;color:#1F2A44}
+.sname{font-size:3.4vmin;margin-top:1.4vmin}
+.ex{font-size:3vmin;color:#4F5F80;margin-top:.6vmin}
+.grade{font-size:2.4vmin;color:#7F8AC0;margin-top:.4vmin}
+.best{margin-top:auto;padding-top:1vmin;font-size:2.6vmin;color:#4F5F80}
+.best b{color:#1F2A44}
+.foot{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-align-items:center;align-items:center;margin-top:auto;padding-top:2vmin}
+.foot > *{margin:0 2vmin 1.4vmin 0}
+.pill{padding:1.6vmin 2.8vmin;font-size:2.8vmin;border-radius:10vmin}
+.note{font-size:2.4vmin;color:#B9C3F2}
+.credit{font-size:1.8vmin;color:#7F8AC0;width:100%}
+
+/* game */
+.bar{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;margin-bottom:1.4vmin}
+.icon-btn{width:9vmin;height:9vmin;-webkit-flex:none;flex:none}
+.icon-btn img{width:5.5vmin;height:5.5vmin}
+.dots{-webkit-flex:1;flex:1;text-align:center;font-size:0}
+.dot{display:inline-block;width:3.2vmin;height:3.2vmin;border-radius:50%;border:0.45vmin solid #5CE1E6;background:#131A3D;margin:0 .6vmin}
+.dot.now{background:#5CE1E6}.dot.gold{background:#FFD93D;border-color:#FFD93D}.dot.ok{background:#7CFFB2;border-color:#7CFFB2}
+.stars{font-size:4vmin;min-width:13vmin;text-align:right;color:#FFD93D}
+.stage{-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:space-around;justify-content:space-around}
+.hintrow{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center}
+.hint{margin:0;font-size:4.2vmin;color:#B9C3F2;text-align:center}
+.sayb{width:8vmin;height:8vmin;border-radius:50%;background:#FFD93D;margin-left:2vmin;-webkit-flex:none;flex:none}
+.sayb img{width:5vmin;height:5vmin}
+.prompt{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+.prompt.col{-webkit-flex-direction:column;flex-direction:column}
+.op{font-size:10vmin;margin:0 2vmin;color:#FFD93D}
+
+/* ten-frames */
+.frame{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;width:39.6vmin;margin:1vmin;background:#131A3D;border:0.5vmin solid #5CE1E6;border-radius:1.6vmin;padding:.4vmin}
+.cell{position:relative;width:7vmin;height:7vmin;margin:.2vmin;border:0.25vmin dashed rgba(92,225,230,.35);border-radius:1vmin;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center}
+.cell img{width:5.6vmin;height:5.6vmin}
+.cell.x img{opacity:.35}
+.cell.x:after{content:"";position:absolute;left:8%;right:8%;top:46%;height:.8vmin;border-radius:.4vmin;background:#FF5C7A;-webkit-transform:rotate(-40deg);transform:rotate(-40deg)}
+.sm .frame{width:31.6vmin;padding:.3vmin;margin:.6vmin}
+.sm .cell{width:5.6vmin;height:5.6vmin;margin:.15vmin}
+.sm .cell img{width:4.6vmin;height:4.6vmin}
+.groups{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-justify-content:center;justify-content:center;max-width:120vmin}
+.grp{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-justify-content:center;justify-content:center;width:19vmin;min-height:13vmin;margin:1vmin;padding:1vmin;border:0.5vmin solid #FF9ED8;border-radius:50%;background:#131A3D;-webkit-align-content:center;align-content:center}
+.grp img{width:5.4vmin;height:5.4vmin;margin:.3vmin}
+
+/* place value */
+.pv{display:-webkit-flex;display:flex;-webkit-align-items:flex-end;align-items:flex-end;padding:2vmin;background:#131A3D;border:0.5vmin solid #5CE1E6;border-radius:2vmin}
+.rod{margin:0 .7vmin}
+.rod span,.ones span{display:block;width:4vmin;height:2.6vmin;background:#FFD93D;border:0.3vmin solid #1F2A44;margin-top:-.3vmin}
+.ones{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap-reverse;flex-wrap:wrap-reverse;width:9vmin;margin-left:3vmin}
+.ones span{width:4vmin;height:4vmin;background:#7CFFB2;margin:.2vmin;border-radius:.6vmin}
+.pvkey{font-size:3vmin;color:#B9C3F2;margin-top:1.4vmin}
+
+/* equations, sequences */
+.eq{font-size:12vmin;line-height:1.1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;margin:1vmin 0}
+.eq.small{font-size:8vmin}
+.eq span{margin:0 1.4vmin}
+.q{display:inline-block;min-width:13vmin;padding:0 1.6vmin;text-align:center;border-radius:2vmin;background:#FFD93D;color:#1F2A44;border:0.5vmin solid #1F2A44}
+.q.reveal{background:#FF9E5C}
+/* adding and taking away with 2-digit numbers: stacked, so ones sit under ones and tens under tens.
+   Every row has the answer box's padding and border, so the digit columns line up exactly. */
+.colsum{display:-webkit-inline-flex;display:inline-flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:flex-end;align-items:flex-end;
+  font-size:10vmin;line-height:1.08;margin:1vmin 0}
+.crow{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center}
+.cop{width:9vmin;text-align:center;margin-right:1.4vmin}
+.cnum{display:-webkit-flex;display:flex;padding:0 1.6vmin;border:0.5vmin solid transparent}
+.dg{display:block;width:.66em;text-align:center;font-style:normal}
+.cnum .p0{color:#7CFFB2}.cnum .p1{color:#FFD93D}.cnum .p2{color:#FF9ED8}
+.cbar{-webkit-align-self:stretch;align-self:stretch;height:0;border-top:0.8vmin solid #F3F6FF;border-radius:.4vmin;margin:.6vmin 0 1.2vmin}
+.q.colq{min-width:0;display:-webkit-flex;display:flex;-webkit-justify-content:flex-end;justify-content:flex-end}
+/* carrying: a small row above for the carried 1, and a glowing band over the column being added */
+.colsum{position:relative;z-index:0}
+.crow.ccarry{height:.62em}
+.ccarry .dg{display:-webkit-flex;display:flex;-webkit-justify-content:center;justify-content:center;-webkit-align-items:flex-end;align-items:flex-end}
+.cy{display:block;font-size:.5em;line-height:1.1;padding:0 .28em;border-radius:.35em;background:#FF9ED8;color:#1F2A44;font-weight:600;font-style:normal;
+  box-shadow:0.4vmin 0.4vmin 0 #05081A;-webkit-animation:cypop .5s ease-out;animation:cypop .5s ease-out}
+@-webkit-keyframes cypop{0%{-webkit-transform:translateY(1.4em) scale(.4);opacity:0}100%{-webkit-transform:none;opacity:1}}
+@keyframes cypop{0%{transform:translateY(1.4em) scale(.4);opacity:0}100%{transform:none;opacity:1}}
+.cband{position:absolute;z-index:-1;border-radius:1.6vmin;background:rgba(92,225,230,.16);border:0.4vmin dashed #5CE1E6;display:none}
+.bignum{font-size:20vmin;line-height:1;color:#FFD93D;text-shadow:0.8vmin 0.8vmin 0 #05081A}
+.seq{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+.bub{min-width:13vmin;height:13vmin;margin:1vmin;padding:0 1.6vmin;font-size:7.5vmin;border-radius:6.5vmin;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center}
+.bub img{width:9vmin;height:9vmin}
+.bub.q{background:#FFD93D;color:#1F2A44;min-width:13vmin}
+/* the pattern's rule, shown once she gets it right */
+.step{font-size:4.2vmin;color:#7CFFB2;visibility:hidden;margin:0 .2vmin;min-width:6vmin;text-align:center}
+.seq.solved .step{visibility:visible}
+.seq.solved .bub.b2{background:#8FD3FF}
+/* long rows shrink to stay on one line (seqSize): p = beside the keypad, c = full width */
+.padleft .seq.p80 .bub,.seq.c80 .bub{min-width:10.4vmin;height:10.4vmin;font-size:6vmin;padding:0 1.3vmin;margin:.8vmin}
+.padleft .seq.p80 .step,.seq.c80 .step{font-size:3.4vmin;min-width:4.8vmin}
+.padleft .seq.p72 .bub,.seq.c72 .bub{min-width:9.4vmin;height:9.4vmin;font-size:5.4vmin;padding:0 1.15vmin;margin:.72vmin}
+.padleft .seq.p72 .step,.seq.c72 .step{font-size:3vmin;min-width:4.3vmin}
+.padleft .seq.p65 .bub,.seq.c65 .bub{min-width:8.5vmin;height:8.5vmin;font-size:4.9vmin;padding:0 1vmin;margin:.65vmin}
+.padleft .seq.p65 .step,.seq.c65 .step{font-size:2.8vmin;min-width:3.9vmin}
+.padleft .seq.p55 .bub,.seq.c55 .bub{min-width:7.2vmin;height:7.2vmin;font-size:4.1vmin;padding:0 .9vmin;margin:.55vmin}
+.padleft .seq.p55 .step,.seq.c55 .step{font-size:2.4vmin;min-width:3.3vmin}
+.rule{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
+  margin-top:1.4vmin;padding:1vmin 3vmin;border-radius:3vmin;background:#131A3D;border:0.5vmin solid #7CFFB2;font-size:4.8vmin;color:#F3F6FF}
+.rule b{color:#7CFFB2;margin-right:1.4vmin;font-weight:600}
+.rule.long{font-size:4vmin}
+.rule .b2{color:#8FD3FF}
+.rule img{width:6.4vmin;height:6.4vmin;margin:0 .5vmin}
+.rule .brk{color:#7CFFB2;font-size:6vmin;margin:0 .6vmin}
+
+/* answers */
+.choices{display:-webkit-flex;display:flex;-webkit-justify-content:center;justify-content:center;-webkit-flex-wrap:wrap;flex-wrap:wrap;width:100%}
+.choice{margin:0 1.6vmin;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center}
+.choice.n{width:19vmin;height:15vmin;font-size:8.5vmin}
+.choice.g{padding:1vmin;background:#1B2457;border-color:#5CE1E6}
+.choice.e{width:16vmin;height:16vmin}
+.choice.e img{width:11vmin;height:11vmin}
+.choice.dim{opacity:.35;pointer-events:none}
+.choice.right{background:#7CFFB2;color:#14193A}
+.nope{-webkit-animation:shake .4s;animation:shake .4s}
+@-webkit-keyframes shake{20%{-webkit-transform:translateX(-1.4vmin)}40%{-webkit-transform:translateX(1.4vmin)}60%{-webkit-transform:translateX(-.8vmin)}80%{-webkit-transform:translateX(.8vmin)}}
+@keyframes shake{20%{transform:translateX(-1.4vmin)}40%{transform:translateX(1.4vmin)}60%{transform:translateX(-.8vmin)}80%{transform:translateX(.8vmin)}}
+
+/* keypad rounds */
+.padrow{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:space-around;justify-content:space-around;width:100%;-webkit-flex:1;flex:1}
+.padleft{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:space-around;justify-content:space-around;-webkit-flex:1;flex:1;height:100%}
+.pad{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;width:44vmin;-webkit-flex:none;flex:none}
+.key{width:12.6vmin;height:12vmin;margin:.8vmin;font-size:6.4vmin;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center}
+.key.go{background:#7CFFB2}
+.key.del{background:#FFD9E6}
+
+/* end */
+.endbox{-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;text-align:center}
+.endbox img{width:18vmin;height:18vmin}
+.endbox h2{margin:2vmin 0 1vmin;font-size:10vmin;font-weight:600;line-height:1;color:#FFD93D;text-shadow:0.6vmin 0.6vmin 0 #05081A}
+.score{font-size:4.4vmin;color:#B9C3F2}
+.score b{color:#FFD93D}
+.endbtns{margin-top:4vmin;display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-justify-content:center;justify-content:center}
+.bigbtn{padding:2.4vmin 4vmin;font-size:3.8vmin;border-radius:2.6vmin;margin:1vmin 1.4vmin}
+.bigbtn.go{background:#7CFFB2;color:#14193A}
+
+.bit{position:fixed;width:1.8vmin;height:1.8vmin;border-radius:.4vmin;pointer-events:none;z-index:9;
+  -webkit-transition:-webkit-transform .9s ease-out,opacity .9s ease-out;transition:transform .9s ease-out,opacity .9s ease-out}
+#sky{position:fixed;left:0;top:0;right:0;bottom:0;pointer-events:none;z-index:0}
+.star{position:absolute;border-radius:50%;background:#fff;-webkit-animation:twinkle 3s ease-in-out infinite;animation:twinkle 3s ease-in-out infinite}
+@-webkit-keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+@media (orientation: portrait){
+  .stone{width:48%}
+  .padrow{-webkit-flex-direction:column;flex-direction:column}
+  .hero h1{font-size:10vmin}
+}
+</style>
+<link rel="stylesheet" href="back.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0B1026">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Space Words">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+</head>
+<body>
+<div id="sky"></div>
+<button class="backbtn" id="backBtn" aria-label="Back"><b>&#8592;</b>Back</button>
+
+<section class="screen on" id="home">
+  <div class="hero backroom">
+    <img id="heroImg" src="emoji/1f31f.svg" alt="">
+    <div><h1 id="heroTitle"></h1><p id="heroSub"></p></div>
+  </div>
+  <div class="path" id="path"></div>
+  <div class="foot">
+    <span class="note" id="speechNote" style="display:none">Talking isn't set up on this device yet. Questions are still written on screen.</span>
+    <span class="credit">Pictures: Twemoji by Twitter and contributors, CC-BY 4.0</span>
+  </div>
+</section>
+
+<section class="screen" id="game">
+  <div class="bar">
+    <span class="barspace"></span>
+    <div class="dots" id="dots"></div>
+    <div class="stars" id="stars"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+</section>
+
+<section class="screen" id="end">
+  <div class="endbox">
+    <img src="emoji/1f47d.svg" alt="">
+    <h2 id="endTitle"></h2>
+    <div class="score" id="endScore"></div>
+    <div class="endbtns" id="endBtns"></div>
+  </div>
+</section>
+
+<script src="speech.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ---------- helpers ---------- */
+function $(id){ return document.getElementById(id); }
+function el(tag, cls, html){ var e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; }
+function shuffle(a){ a = a.slice(); for (var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random()*(i+1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function ri(lo, hi){ return lo + Math.floor(Math.random()*(hi - lo + 1)); }
+function hasClass(e, c){ return (" " + e.className + " ").indexOf(" " + c + " ") >= 0; }
+function addClass(e, c){ if (!hasClass(e, c)) e.className += " " + c; }
+function removeClass(e, c){ e.className = (" " + e.className + " ").replace(" " + c + " ", " ").replace(/^\s+|\s+$/g, ""); }
+function show(id){ ["home","game","end"].forEach(function(s){ $(s).className = "screen" + (s === id ? " on" : ""); }); document.body.setAttribute("data-screen", id); }
+function n(k){ return "n_" + k; }
+/* how a number is said: n_0..n_100 have clips; 101-999 is "3 hundred" + "45" */
+function numSay(v){
+  if (v <= 100) return [n(v)];
+  var h = Math.floor(v / 100), r = v % 100;
+  return r ? [n(h), "m_hundred", n(r)] : [n(h), "m_hundred"];
+}
+var MINUS = "&#8722;", TIMES = "&#215;", DIVIDE = "&#247;";
+
+/* things to count: emoji code and plural name */
+var THINGS = [["2b50","stars"],["1f47d","aliens"],["1f680","rockets"],["1f319","moons"],["1fa90","planets"],["1f6f8","flying saucers"],
+  ["1f34e","apples"],["1f36a","cookies"],["1f41e","ladybugs"],["1f388","balloons"],["1f6f0","satellites"],["1f320","shooting stars"]];
+function img(code){ return '<img src="emoji/' + code + '.svg" alt="">'; }
+
+/* n objects in ten-frames; the last `cross` of them crossed out (taken away) */
+function frames(count, code, cross){
+  var out = "", frameCount = Math.max(1, Math.ceil(count / 10));
+  for (var f = 0; f < frameCount; f++){
+    out += '<div class="frame">';
+    for (var c = 0; c < 10; c++){
+      var i = f*10 + c, x = cross && i >= count - cross && i < count;
+      out += '<div class="cell' + (x ? " x" : "") + '">' + (i < count ? img(code) : "") + '</div>';
+    }
+    out += '</div>';
+  }
+  return out;
+}
+
+/* four answer choices around the right one, kept inside lo..hi */
+function numOpts(ans, lo, hi, extras, count){
+  var want = count || 4, set = [ans];
+  var cands = shuffle((extras || []).concat([ans+1, ans-1, ans+2, ans-2, ans+10, ans-10]));
+  for (var i = 0; i < cands.length && set.length < want; i++){
+    var c = cands[i];
+    if (c >= lo && c <= hi && set.indexOf(c) < 0) set.push(c);
+  }
+  var guard = 0;
+  while (set.length < want && guard++ < 200){ var r = ri(lo, hi); if (set.indexOf(r) < 0) set.push(r); }
+  return shuffle(set).map(function(v){ return { html:String(v), val:v, cls:"n" }; });
+}
+
+/* ---------- round makers ----------
+   Each returns { hint, say, prompt, kind:"choice"|"pad", options, answer, answerSay }.
+   For keypad rounds the prompt contains <span class="q" id="entry">?</span>. */
+var Q = '<span class="q" id="entry">?</span>';
+
+function rCount(lo, hi){
+  var k = ri(lo, hi), t = pick(THINGS);
+  return { hint:"How many " + t[1] + "?", say:["m_how_many"], prompt:frames(k, t[0]),
+    kind:"choice", options:numOpts(k, 0, hi + 2), answer:k, answerSay:[n(k)] };
+}
+function rFindGroup(lo, hi){
+  var k = ri(lo, hi), t = pick(THINGS), set = [k], guard = 0;
+  while (set.length < 3 && guard++ < 100){ var o = k + pick([-3,-2,-1,1,2,3]); if (o >= 1 && o <= hi && set.indexOf(o) < 0) set.push(o); }
+  return { hint:"Tap the group with " + k + ".", say:["m_find_group", n(k)], prompt:'<div class="bignum tw" data-say="n_' + k + '">' + k + '</div>',
+    kind:"choice", options:shuffle(set).map(function(v){ return { html:'<div class="sm">' + frames(v, t[0]) + '</div>', val:v, cls:"g" }; }),
+    answer:k, answerSay:[n(k)] };
+}
+function rCompareGroups(lo, hi){
+  var a = ri(lo, hi), b, guard = 0;
+  do { b = ri(lo, hi); } while ((b === a || Math.abs(a - b) > 6) && guard++ < 100);
+  if (b === a) b = a === hi ? a - 1 : a + 1;
+  var more = Math.random() < 0.6, t = pick(THINGS), ans = more ? Math.max(a, b) : Math.min(a, b);
+  return { hint:"Which group has " + (more ? "more" : "fewer") + " " + t[1] + "?", say:[more ? "m_more" : "m_fewer"], prompt:"",
+    kind:"choice", options:[a, b].map(function(v){ return { html:'<div class="sm">' + frames(v, t[0]) + '</div>', val:v, cls:"g" }; }),
+    answer:ans, answerSay:[n(ans)] };
+}
+function rCompareNums(lo, hi){
+  var a = ri(lo, hi), b;
+  var tens = Math.floor(a / 10), ones = a % 10;
+  if (a >= 10 && ones !== 0 && ones !== tens && Math.random() < 0.4) b = ones*10 + tens;   // 46 vs 64
+  else { var guard = 0; do { b = ri(lo, hi); } while (b === a && guard++ < 100); }
+  if (b === a) b = a + 1;
+  var big = Math.random() < 0.6, ans = big ? Math.max(a, b) : Math.min(a, b);
+  return { hint:"Which number is " + (big ? "bigger" : "smaller") + "?", say:[big ? "m_bigger" : "m_smaller"], prompt:"",
+    kind:"choice", options:[a, b].map(function(v){ return { html:String(v), val:v, cls:"n" }; }), answer:ans, answerSay:[n(ans)] };
+}
+/* a long row of numbers gets smaller so it stays on one line: about 104vmin of room beside the keypad ("p"),
+   150vmin at full width ("c"). The sizes are in the CSS (.seq.p80 ...). */
+function seqSize(values, steps){
+  var w = 0, i;
+  for (i = 0; i < values.length; i++) w += Math.max(13, String(values[i]).length*4.1 + 3.2) + 2;
+  for (i = 0; steps && i < steps.length; i++) w += Math.max(6, steps[i].length*2.1) + 0.4;
+  function tier(room, pre){ var f = room / w; return f >= 1 ? "" : " " + pre + (f >= 0.8 ? "80" : f >= 0.72 ? "72" : f >= 0.65 ? "65" : "55"); }
+  return tier(104, "p") + tier(150, "c");
+}
+/* turns: two patterns taking turns; every other number is tinted once it's solved */
+function bubbles(values, hideIndex, asImages, steps, turns){
+  var out = '<div class="seq' + (asImages ? "" : seqSize(values, steps)) + '">';
+  for (var i = 0; i < values.length; i++){
+    if (i > 0 && steps) out += '<span class="step">' + steps[i - 1] + '</span>';
+    if (i === hideIndex) out += '<div class="paper bub q" id="entry">?</div>';
+    else if (asImages) out += '<div class="paper bub">' + img(values[i]) + '</div>';
+    else out += '<div class="paper bub tw' + (turns && i % 2 ? " b2" : "") + '" data-say="' + numSay(values[i]).join(" ") + '">' + values[i] + '</div>';
+  }
+  return out + '</div>';
+}
+function rNeighbor(lo, hi, pad){
+  var type = pick(["after","before","between"]), k, vals, hide, say, hint;
+  if (type === "after"){ k = ri(lo, hi - 1); vals = [k, k + 1]; hide = 1; hint = "What comes after " + k + "?"; say = ["m_after", n(k)]; }
+  else if (type === "before"){ k = ri(lo + 1, hi); vals = [k - 1, k]; hide = 0; hint = "What comes before " + k + "?"; say = ["m_before", n(k)]; }
+  else { k = ri(lo + 1, hi - 1); vals = [k - 1, k, k + 1]; hide = 1; hint = "What number is between " + (k-1) + " and " + (k+1) + "?"; say = ["m_between", n(k-1), "m_and", n(k+1)]; }
+  var ans = vals[hide];
+  return { hint:hint, say:say, prompt:bubbles(vals, hide), kind:pad ? "pad" : "choice",
+    options:pad ? null : numOpts(ans, 0, 100), answer:ans, answerSay:[n(ans)] };
+}
+function placeValue(k){
+  var tens = Math.floor(k / 10), ones = k % 10, out = '<div class="pv">';
+  for (var t = 0; t < tens; t++){ out += '<div class="rod">'; for (var s = 0; s < 10; s++) out += '<span></span>'; out += '</div>'; }
+  out += '<div class="ones">'; for (var o = 0; o < ones; o++) out += '<span></span>'; out += '</div></div>';
+  return out + '<div class="pvkey">Each tall stack is 10. Each green square is 1.</div>';
+}
+function rPlaceValue(pad){
+  var k = ri(11, 99), tens = Math.floor(k / 10), ones = k % 10;
+  return { hint:"What number is this?", say:["m_what_number"], prompt:'<div class="prompt col">' + placeValue(k) + (pad ? '<div class="eq small">' + Q + '</div>' : '') + '</div>',
+    kind:pad ? "pad" : "choice", options:pad ? null : numOpts(k, 10, 99, ones > 0 ? [ones*10 + tens] : []), answer:k, answerSay:[n(k)] };
+}
+function rTenMoreLess(pad){
+  var more = Math.random() < 0.5, k = more ? ri(10, 89) : ri(20, 99), ans = more ? k + 10 : k - 10;
+  return { hint:"What is 10 " + (more ? "more" : "less") + " than " + k + "?", say:[more ? "m_ten_more" : "m_ten_less", n(k)],
+    prompt:'<div class="eq small"><span>' + Speech.tapText("10 " + (more ? "more" : "less") + " than " + k + " is") + '</span>' + Q + '</div>',
+    kind:pad ? "pad" : "choice", options:pad ? null : numOpts(ans, 0, 100, [k + 1, k - 1, more ? k - 10 : k + 10]), answer:ans, answerSay:[n(ans)] };
+}
+
+/* numbers and signs in a question read themselves when tapped */
+function num(v){ return '<span class="tw" data-say="n_' + v + '">' + v + '</span>'; }
+var OP_KEY = { "+":"m_plus" }; OP_KEY[MINUS] = "m_minus"; OP_KEY[TIMES] = "m_times"; OP_KEY[DIVIDE] = "m_div";
+function opSpan(op){ return '<span class="tw" data-say="' + OP_KEY[op] + '">' + op + '</span>'; }
+var EQUALS = '<span class="tw" data-say="m_equals">=</span>';
+function eqHtml(a, op, b){ return '<div class="eq">' + num(a) + opSpan(op) + num(b) + EQUALS + Q + '</div>'; }
+/* digits of v in `cols` cells, right-aligned; each cell colored by its place (ones, tens, hundreds) */
+function digitCells(v, cols){
+  var d = String(v), out = "";
+  for (var i = 0; i < cols; i++){
+    var k = i - (cols - d.length), place = cols - 1 - i;
+    out += '<i class="dg p' + place + '">' + (k >= 0 ? d.charAt(k) : "") + '</i>';
+  }
+  return out;
+}
+/* "34 + 25" stacked: ones under ones, tens under tens, answer box under the line */
+function colHtml(a, op, b, ans, carry){
+  var cols = Math.max(String(a).length, String(b).length, String(ans).length);
+  return '<div class="colsum" data-cols="' + cols + '">' + (carry ? '<div class="cband"></div>' +
+    '<div class="crow ccarry"><span class="cop"></span><span class="cnum">' + digitCells("", cols) + '</span></div>' : '') +
+    '<div class="crow"><span class="cop"></span><span class="cnum tw" data-say="n_' + a + '">' + digitCells(a, cols) + '</span></div>' +
+    '<div class="crow">' + opSpan(op).replace('class="tw"', 'class="cop tw"') + '<span class="cnum tw" data-say="n_' + b + '">' + digitCells(b, cols) + '</span></div>' +
+    '<div class="cbar"></div>' +
+    '<div class="crow"><span class="cop"></span><span class="q colq" id="entry" data-cols="' + cols + '">' + digitCells("", cols - 1) + '<i class="dg p0">?</i></span></div>' +
+    '</div>';
+}
+/* adding and taking away: stacked once a number has 2 digits, in a line for small facts */
+function sumHtml(a, op, b, ans){ return a >= 10 || b >= 10 || ans >= 10 ? colHtml(a, op, b, ans) : eqHtml(a, op, b); }
+/* what goes in the answer box: typed digits, the revealed answer, or "?" (stacked sums keep their columns) */
+function setEntry(e, text){
+  var cols = e && parseInt(e.getAttribute("data-cols"), 10);
+  if (!e) return;
+  if (!cols){ e.textContent = text; return; }
+  e.innerHTML = text === "?" ? digitCells("", cols - 1) + '<i class="dg p0">?</i>' : digitCells(text, Math.max(cols, text.length));
+}
+
+/* carrying, in 2 parts (24 + 67): add the ones (11: write 1, carry the 1 above the tens), then the
+   tens with the carried 1 (1 + 2 + 6 = 9). Each part has its own choices; the answer fills in. */
+function carryRound(a, b){
+  var s = a + b, oa = a % 10, ob = b % 10, ones = oa + ob, ta = Math.floor(a / 10), tb = Math.floor(b / 10), tens = 1 + ta + tb;
+  var parts = [1].concat(ta ? [ta] : [], tb ? [tb] : []), tensSay = ["m_add_tens"];
+  parts.forEach(function(v, i){ if (i) tensSay.push("m_plus"); tensSay.push(n(v)); });
+  return { kind:"steps", hint:"What is " + a + " + " + b + "?", say:["m_what_is", n(a), "m_plus", n(b)],
+    prompt:colHtml(a, "+", b, s, true), answer:s, answerSay:[n(a), "m_plus", n(b), "m_equals", n(s)],
+    steps:[
+      { place:0, hint:"Add the ones: " + oa + " + " + ob, say:["m_add_ones", n(oa), "m_plus", n(ob)],
+        options:numOpts(ones, 0, 19, [ones % 10, ones + 1]), answer:ones,
+        doneSay:[n(oa), "m_plus", n(ob), "m_equals", n(ones), "m_write", n(ones % 10), "m_carry"] },
+      { place:1, hint:"Add the tens: " + parts.join(" + "), say:tensSay,
+        options:numOpts(tens, 0, 19, [tens - 1, tens + 1]), answer:tens }
+    ] };
+}
+/* adding with a carry (one number has tens, the ones make 10 or more) goes in 2 parts */
+function needsCarry(a, b){ return (a >= 10 || b >= 10) && a % 10 + b % 10 >= 10; }
+
+function rAdd(maxSum, pics, pad){
+  var a = ri(1, maxSum - 1), b = ri(1, maxSum - a), s = a + b, t = pick(THINGS);
+  if (!pics && needsCarry(a, b)) return carryRound(a, b);
+  var p = pics ? '<div class="prompt">' + frames(a, t[0]) + '<span class="op">+</span>' + frames(b, t[0]) + '</div>' + eqHtml(a, "+", b) : sumHtml(a, "+", b, s);
+  return { hint:"What is " + a + " + " + b + "?", say:["m_what_is", n(a), "m_plus", n(b)], prompt:'<div class="prompt col">' + p + '</div>',
+    kind:pad ? "pad" : "choice", options:pad ? null : numOpts(s, 0, maxSum + 3, [a, b]), answer:s, answerSay:[n(s)] };
+}
+function rSub(max, pics, pad){
+  var a = ri(2, max), b = ri(1, a), d = a - b, t = pick(THINGS);
+  var p = pics ? '<div class="prompt">' + frames(a, t[0], b) + '</div>' + eqHtml(a, MINUS, b) : sumHtml(a, MINUS, b, d);
+  return { hint:"What is " + a + " " + "−" + " " + b + "?", say:["m_what_is", n(a), "m_minus", n(b)], prompt:'<div class="prompt col">' + p + '</div>',
+    kind:pad ? "pad" : "choice", options:pad ? null : numOpts(d, 0, max, [a + b <= max + 5 ? a + b : a]), answer:d, answerSay:[n(d)] };
+}
+function rMissing(max, pad){
+  var a = ri(1, max - 1), b = ri(1, max - a), s = a + b, first = Math.random() < 0.5;
+  var q = Q;
+  var html = '<div class="eq">' + (first ? q + opSpan("+") + num(b) : num(a) + opSpan("+") + q) + EQUALS + num(s) + '</div>';
+  var ans = first ? a : b;
+  return { hint:"What number is missing?", say:["m_missing"], prompt:html, kind:pad ? "pad" : "choice",
+    options:pad ? null : numOpts(ans, 0, max, [s, first ? b : a]), answer:ans, answerSay:[n(ans)] };
+}
+function rAdd2(pad){
+  var type = pick(["tens","easy","carry"]), a, b;
+  if (type === "tens"){ a = ri(1, 8)*10; b = ri(1, 9 - a/10)*10; }
+  else if (type === "easy"){ var ta = ri(1, 7), tb = ri(1, 8 - ta), oa = ri(0, 8), ob = ri(0, 9 - oa); a = ta*10 + oa; b = tb*10 + ob; if (b < 10) b += 10; }
+  else { var oa2 = ri(2, 9), ob2 = ri(10 - oa2, 9), ta2 = ri(1, 6), tb2 = ri(0, 7 - ta2); a = ta2*10 + oa2; b = tb2*10 + ob2; }
+  var s = a + b;
+  if (needsCarry(a, b)) return carryRound(a, b);
+  return { hint:"What is " + a + " + " + b + "?", say:["m_what_is", n(a), "m_plus", n(b)], prompt:sumHtml(a, "+", b, s), kind:pad ? "pad" : "choice",
+    options:pad ? null : numOpts(s, 0, 100, [s - 10, s + 10]), answer:s, answerSay:[n(s)] };
+}
+function rSub2(pad){
+  var type = pick(["tens","easy","borrow"]), a, b;
+  if (type === "tens"){ a = ri(3, 9)*10; b = ri(1, a/10 - 1)*10; }
+  else if (type === "easy"){ var ta = ri(3, 9), oa = ri(2, 9); a = ta*10 + oa; b = ri(1, ta - 1)*10 + ri(0, oa); }
+  else { var ta2 = ri(3, 9), oa2 = ri(0, 7); a = ta2*10 + oa2; b = ri(1, ta2 - 2)*10 + ri(oa2 + 1, 9); }
+  var d = a - b;
+  return { hint:"What is " + a + " − " + b + "?", say:["m_what_is", n(a), "m_minus", n(b)], prompt:sumHtml(a, MINUS, b, d), kind:pad ? "pad" : "choice",
+    options:pad ? null : numOpts(d, 0, 100, [d + 10, d - 10]), answer:d, answerSay:[n(d)] };
+}
+function rGroups(pad){
+  var g = ri(2, 5), each = ri(2, 5), t = pick(THINGS), out = '<div class="groups">';
+  for (var i = 0; i < g; i++){ out += '<div class="grp">'; for (var j = 0; j < each; j++) out += img(t[0]); out += '</div>'; }
+  out += '</div>';
+  var s = g*each;
+  return { hint:g + " groups of " + each + ". How many in all?", say:[n(g), "m_groups_of", n(each), "m_in_all"],
+    prompt:'<div class="prompt col">' + out + eqHtml(g, TIMES, each).replace('class="eq"', 'class="eq small"') + '</div>',
+    kind:pad ? "pad" : "choice", options:pad ? null : numOpts(s, 0, 30, [g + each, s + each, s - each]), answer:s, answerSay:[n(s)] };
+}
+function rTimes(pad){
+  var a = pick([2,3,4,5,10,2,5,10,6,7,8,9]), b = ri(1, a > 5 && a < 10 ? 6 : 10), p = a*b;
+  if (Math.random() < 0.5){ var tmp = a; a = b; b = tmp; }
+  return { hint:"What is " + a + " × " + b + "?", say:["m_what_is", n(a), "m_times", n(b)], prompt:eqHtml(a, TIMES, b), kind:pad ? "pad" : "choice",
+    options:pad ? null : numOpts(p, 0, 100, [a + b, p + a, p - b]), answer:p, answerSay:[n(p)] };
+}
+function rDivide(pad){
+  var b = pick([2,3,4,5,10]), q = ri(1, 10), a = b*q;
+  return { hint:"What is " + a + " ÷ " + b + "?", say:["m_what_is", n(a), "m_div", n(b)], prompt:eqHtml(a, DIVIDE, b), kind:pad ? "pad" : "choice",
+    options:pad ? null : numOpts(q, 0, 20, [q + 1, q - 1, b]), answer:q, answerSay:[n(q)] };
+}
+
+/* sequences. Each one carries its rule: steps between the numbers, a line of text, and what to say.
+   rule.kind and its numbers say how the sequence was made (web-test.js rebuilds every sequence from them). */
+var MINUS_SIGN = "−", TIMES_SIGN = "×", DIV_SIGN = "÷";
+function signed(d){ return (d >= 0 ? "+" : MINUS_SIGN) + Math.abs(d); }
+function opSay(d){ return [d >= 0 ? "m_plus" : "m_minus"].concat(numSay(Math.abs(d))); }
+function diffSteps(v){ var s = []; for (var i = 1; i < v.length; i++) s.push(signed(v[i] - v[i - 1])); return s; }
+function arithRule(vals){
+  var d = vals[1] - vals[0], steps = [];
+  for (var i = 1; i < vals.length; i++) steps.push(signed(d));
+  return { kind:"arith", d:d, steps:steps, html:signed(d) + " each time", say:["m_rule"].concat(opSay(d)) };
+}
+var UNITS = ["AB","AAB","ABB","ABC","AABB","ABAC"];
+function rPicturePattern(){
+  var unit = pick(UNITS), letters = [], codes = {}, pool = shuffle(THINGS);
+  for (var i = 0; i < unit.length; i++){ var L = unit.charAt(i); if (!codes[L]){ codes[L] = pool[letters.length][0]; letters.push(L); } }
+  var shown = unit.length*2 + ri(0, unit.length - 1), seq = [];
+  for (var s = 0; s <= shown; s++) seq.push(codes[unit.charAt(s % unit.length)]);
+  var ans = seq[shown];
+  var opts = letters.map(function(L){ return codes[L]; });
+  if (opts.length < 3) opts.push(pool[letters.length][0]);
+  var unitHtml = unit.split("").map(function(L){ return img(codes[L]); }).join("");
+  return { hint:"What comes next?", say:["m_next"], prompt:bubbles(seq, shown, true), kind:"choice",
+    options:shuffle(opts).map(function(c){ return { html:img(c), val:c, cls:"e" }; }), answer:ans, answerHtml:img(ans), answerSay:[],
+    rule:{ kind:"repeat", html:'<span class="brk">[</span>' + unitHtml + '<span class="brk">]</span> repeats', say:["m_rule_repeat"] } };
+}
+/* a number sequence round. The blank is `hide` (default: the last number, or one in the middle if `missing`). */
+function seqRound(vals, missing, pad, rule, hide, extras, hint){
+  if (hide === undefined) hide = missing ? ri(1, vals.length - 2) : vals.length - 1;
+  var ans = vals[hide], step = vals[1] - vals[0], hi = Math.max.apply(null, vals) > 100 ? 999 : 100;
+  rule = rule || arithRule(vals);
+  var say = [];
+  if (!missing) for (var i = 0; i < hide; i++) say = say.concat(numSay(vals[i]));
+  say.push(missing ? "m_missing" : "m_next");
+  return { hint:hint || (missing ? "What number is missing?" : "What comes next?"), say:say, prompt:bubbles(vals, hide, false, rule.steps, rule.kind === "two"), kind:pad ? "pad" : "choice",
+    options:pad ? null : numOpts(ans, 0, hi, extras || [ans + step, ans - step, ans + 1, ans - 1]), answer:ans, answerSay:numSay(ans), rule:rule, seq:vals, hide:hide };
+}
+function arith(start, step, len){ var v = []; for (var i = 0; i < len; i++) v.push(start + i*step); return v; }
+/* counting by 1s to 100, up or down; the blank can be anywhere */
+function rCountUpDown(missing){
+  var len = ri(4, 6), down = Math.random() < 0.4, top = Math.random() < 0.35 ? 30 : 100;
+  var vals = down ? arith(ri(len - 1, top), -1, len) : arith(ri(0, top - len + 1), 1, len);
+  return seqRound(vals, missing, false, null, missing ? ri(0, len - 2) : undefined);
+}
+/* skip counting: mostly 2s, 5s and 10s (also from odd starts like 7, 17, 27), sometimes 3s, 4s, 25s or 100s; forwards or backwards */
+function rSkip(missing){
+  var step = pick([2,2,2,5,5,5,10,10,10,3,4,25,100]), len = 5, top = 100, mult = step;
+  if (step === 2) mult = 1;
+  else if (step === 5) mult = pick([5,5,1]);
+  else if (step === 10){ mult = pick([1,10]); top = pick([100,100,200]); }
+  else if (step === 25) top = 500;
+  else if (step === 100){ mult = pick([10,50,100]); top = 999; }
+  var vals = arith(mult*ri(0, Math.floor((top - step*(len - 1)) / mult)), step, len);
+  if (Math.random() < 0.35) vals.reverse();
+  return seqRound(vals, missing, false);
+}
+function rRule(missing, pad){
+  var step = pick([3,4,6,7,8,9,11,-2,-3,-4,-5,-6,-10]), len = 5, span = Math.abs(step)*(len - 1), start;
+  start = step > 0 ? ri(0, 100 - span) : ri(span, 100);
+  return seqRound(arith(start, step, len), missing, pad);
+}
+
+/* ---------- brain busters: many kinds of rule, numbers up to 999 ---------- */
+/* jumps that grow (or shrink) by c each time: d0, d0 + c, d0 + 2c... */
+function growRule(v, d0, c){
+  var bigger = c*d0 > 0;
+  return { kind:"grow", d0:d0, c:c, steps:diffSteps(v),
+    html:[d0, d0 + c, d0 + 2*c].map(signed).join(", ") + "... each jump " + (d0 < 0 ? "back " : "") + "is " + Math.abs(c) + (bigger ? " bigger" : " smaller"),
+    say:[bigger ? (Math.abs(c) === 1 ? "m_rule_grow" : "m_rule_grow2") : "m_rule_shrink"] };
+}
+function growSeq(start, d0, c, len){ var v = [start]; for (var i = 1; i < len; i++) v.push(v[i - 1] + d0 + (i - 1)*c); return v; }
+/* the round: the blank is the last number (or, if missingOK, sometimes one in the middle). exLast: wrong answers for a last blank */
+function bustRound(v, rule, pad, missingOK, exLast){
+  var missing = missingOK && Math.random() < 0.3, hide = missing ? ri(1, v.length - 2) : v.length - 1, ans = v[hide], ex = [ans + 1, ans - 1];
+  if (missing){ ex.push(Math.round((v[hide - 1] + v[hide + 1]) / 2)); if (hide > 1) ex.push(2*v[hide - 1] - v[hide - 2]); }
+  else ex = ex.concat([2*v[hide - 1] - v[hide - 2]], exLast || []);
+  return seqRound(v, missing, pad, rule, hide, ex, missing ? "What number is missing? Find the rule!" : "What comes next? Find the rule!");
+}
+var BUSTERS = ["times","times","grow","grow","back","shrink","fib","fib","square","tri","alt","alt","alt","affine","affine","big","big","parity","two","two"];
+function rBuster(pad, type){
+  type = type || pick(BUSTERS);
+  var v, i, rule, last, prev, s, len;
+  if (type === "times"){            /* x2 or x3 (or /2, /3) from many starts */
+    var m = pick([2,2,3]), div = Math.random() < 0.35, lab;
+    s = ri(1, m === 2 ? 40 : 12); v = [s];
+    while (v.length < 5) v.push(v[v.length - 1]*m);
+    if (div) v.reverse();
+    lab = (div ? DIV_SIGN : TIMES_SIGN) + m;
+    rule = { kind:"times", m:m, div:div, steps:x(lab, 4), html:lab + " each time", say:["m_rule", div ? "m_div" : "m_times", n(m)] };
+    last = v[3];
+    return bustRound(v, rule, pad, true, div ? [Math.floor(last/2), last - 1] : [last*m + m, v[4] + v[3]]);
+  }
+  if (type === "grow" || type === "back" || type === "shrink"){
+    var d0, c;
+    if (type === "grow"){ d0 = ri(1, 5); c = pick([1,1,2]); v = growSeq(ri(0, 100), d0, c, 6); }
+    else if (type === "back"){ d0 = -ri(1, 5); c = -pick([1,1,2]); v = growSeq(0, d0, c, 6); s = -v[5] + ri(0, 100); v = v.map(function(k){ return k + s; }); }
+    else { d0 = ri(5, 10); c = -1; v = growSeq(ri(0, 100), d0, c, 6); }
+    prev = v[4] - v[3];
+    return bustRound(v, growRule(v, d0, c), pad, false, [v[4] + prev + 2*c, v[4] + prev - c]);
+  }
+  if (type === "fib"){              /* add the two before: 2, 5, 7, 12, 19, ? */
+    var a = ri(1, 12), b = ri(a, 20);
+    v = [a, b];
+    while (v.length < 6) v.push(v[v.length - 2] + v[v.length - 1]);
+    rule = { kind:"fib", steps:diffSteps(v), html:"Add the 2 numbers before: " + v[3] + " + " + v[4] + " = " + v[5], say:["m_rule_fib"] };
+    return bustRound(v, rule, pad, false, [v[4]*2, v[4] + v[2]]);
+  }
+  if (type === "square" || type === "tri"){   /* square numbers, or triangle numbers, from many starts */
+    var k = ri(1, type === "square" ? 27 : 38), r;
+    v = [];
+    for (i = k; i < k + 5; i++) v.push(type === "square" ? i*i : i*(i + 1)/2);
+    if (type === "square"){
+      r = function(j){ return (k + j) + TIMES_SIGN + (k + j); };
+      rule = { kind:"square", k:k, steps:diffSteps(v), html:"Square numbers: " + r(0) + ", " + r(1) + "... " + r(4), say:["m_rule_square"] };
+    } else rule = { kind:"tri", k:k, steps:diffSteps(v), html:"Triangle numbers: each jump is 1 bigger", say:["m_rule_triangle"] };
+    prev = v[3] - v[2];
+    return bustRound(v, rule, pad, type === "square", [v[3] + prev + 1, v[3] + prev + 3]);
+  }
+  if (type === "alt"){              /* two steps taking turns: +5, -2, +5, -2... */
+    var mode = pick(["updown","updown","downup","upup"]), sa, sb, big = ri(2, 9), small = ri(1, big - 1);
+    len = pick([6, 7]);
+    if (mode === "updown"){ sa = big; sb = -small; s = ri(0, 60); }
+    else if (mode === "downup"){ sa = -big; sb = small; s = (big - small)*3 + big + ri(0, 60); }
+    else { sa = pick([big, small]); sb = sa === big ? small : big; s = ri(0, 60); }
+    v = [s];
+    for (i = 1; i < len; i++) v.push(v[i - 1] + (i % 2 ? sa : sb));
+    rule = { kind:"alt", a:sa, b:sb, steps:diffSteps(v), html:signed(sa) + ", then " + signed(sb) + ", again and again",
+      say:["m_rule"].concat(opSay(sa), ["m_then"], opSay(sb)) };
+    prev = v[len - 2];
+    return bustRound(v, rule, pad, false, [prev + (len % 2 ? sa : sb), prev + sa + sb]);
+  }
+  if (type === "affine"){           /* times, then add: 3, 7, 15, 31, ? (x2 +1) */
+    var mm = pick([2,2,3]), cc = pick([1,1,2,-1]), lo = mm === 2 && cc < 0 ? 2 : 1, hi = lo;
+    var make = function(st){ var w = [st]; while (w.length < 5) w.push(w[w.length - 1]*mm + cc); return w; };
+    while (hi < 30 && make(hi + 1)[4] <= 999) hi++;
+    v = make(ri(lo, hi));
+    var alab = TIMES_SIGN + mm + signed(cc);
+    rule = { kind:"affine", m:mm, c:cc, steps:x(alab, 4), html:TIMES_SIGN + mm + ", then " + signed(cc) + ", each time",
+      say:["m_rule", "m_times", n(mm), "m_then"].concat(opSay(cc)) };
+    return bustRound(v, rule, pad, false, [v[3]*mm, v[3]*mm - cc, v[3] + v[4]]);
+  }
+  if (type === "big"){              /* big jumps: +25, -50, +111... */
+    var d = pick([11,12,15,20,25,50,75,99,101,110,111,120,125,150,200])*(Math.random() < 0.4 ? -1 : 1), span = Math.abs(d)*4;
+    v = arith(d > 0 ? ri(0, 999 - span) : ri(span, 999), d, 5);
+    return bustRound(v, arithRule(v), pad, true, [v[4] + 10, v[4] - 10, v[4] + 100, v[4] - 100]);
+  }
+  if (type === "parity"){           /* odd or even numbers, up to 999 */
+    var odd = Math.random() < 0.5, pd = Math.random() < 0.4 ? -2 : 2;
+    s = 2*ri(pd > 0 ? 0 : 4, pd > 0 ? 494 : 498) + (odd ? 1 : 0);
+    v = arith(s, pd, 5);
+    rule = { kind:"parity", d:pd, odd:odd, steps:x(signed(pd), 4), html:(odd ? "Odd" : "Even") + " numbers: " + signed(pd) + " each time",
+      say:[odd ? "m_odd_nums" : "m_even_nums", "m_rule"].concat(opSay(pd)) };
+    return bustRound(v, rule, pad, true, [v[4] + 10, v[4] - 10]);
+  }
+  /* two patterns taking turns: 1, 50, 2, 45, 3, 40, ? */
+  var steps = [1,2,3,5,10,-1,-2,-5,-10], da, db, a0, b0, nA, nB, guard = 0;
+  len = pick([7, 8]); nA = Math.ceil(len/2); nB = len - nA;
+  var first = function(dd, cnt){ return dd > 0 ? ri(0, 100 - dd*(cnt - 1)) : ri(-dd*(cnt - 1), 100); };
+  do { da = pick(steps); db = pick(steps); a0 = first(da, nA); b0 = first(db, nB); } while (Math.abs(a0 - b0) < 10 && guard++ < 50);
+  if (Math.abs(a0 - b0) < 10){ da = 1; db = -5; a0 = 1; b0 = 60; }
+  v = [];
+  for (i = 0; i < len; i++) v.push(i % 2 ? b0 + db*(i - 1)/2 : a0 + da*i/2);
+  var aw = arith(a0, da, 3).join(", "), bw = arith(b0, db, 3).join(", ");
+  rule = { kind:"two", da:da, db:db, html:"<span>Two patterns: " + aw + "... and <span class=\"b2\">" + bw + "...</span></span>", say:["m_rule_two"] };
+  last = v[len - 2];
+  return bustRound(v, rule, pad, false, [last + (len % 2 ? db : da), v[len - 3] + (len % 2 ? db : da)]);
+}
+/* ---------- games and levels ----------
+   Each level lists 10 round makers; they are shuffled per play. */
+function x(fn, times){ var a = []; for (var i = 0; i < times; i++) a.push(fn); return a; }
+var GAMES = {
+  count: { title:"Star Count", icon:"1f31f", sub:"Count the space things. Pick a level!", levels:[
+    { name:"Count to 10", ex:"How many stars?", grade:"Starter", rounds:x(function(){ return rCount(1, 10); }, 6).concat(x(function(){ return rFindGroup(1, 10); }, 4)) },
+    { name:"Count to 20", ex:"11 to 20", grade:"Kindergarten", rounds:x(function(){ return rCount(11, 20); }, 6).concat(x(function(){ return rNeighbor(1, 20, false); }, 4)) },
+    { name:"More or fewer", ex:"Which is bigger?", grade:"Kindergarten", rounds:x(function(){ return rCompareGroups(2, 15); }, 5).concat(x(function(){ return rCompareNums(1, 50); }, 5)) },
+    { name:"Numbers to 100", ex:"Before, after, between", grade:"1st grade", rounds:x(function(){ return rNeighbor(10, 100, false); }, 4).concat(x(function(){ return rNeighbor(10, 100, true); }, 3), x(function(){ return rCompareNums(10, 99); }, 3)) },
+    { name:"Tens and ones", ex:"4 tens 7 ones = 47", grade:"1st to 2nd grade", rounds:x(function(){ return rPlaceValue(false); }, 3).concat(x(function(){ return rPlaceValue(true); }, 3), x(function(){ return rTenMoreLess(false); }, 2), x(function(){ return rTenMoreLess(true); }, 2)) }
+  ]},
+  ops: { title:"Rocket Math", icon:"1f680", sub:"Add, take away, and more. Pick a level!", levels:[
+    { name:"Add to 5", ex:"2 + 1", grade:"Starter", rounds:x(function(){ return rAdd(5, true, false); }, 10) },
+    { name:"Add and take away", ex:"6 − 2", grade:"Kindergarten", rounds:x(function(){ return rAdd(10, true, false); }, 4).concat(x(function(){ return rSub(10, true, false); }, 4), [function(){ return rAdd(10, false, true); }, function(){ return rSub(10, false, true); }]) },
+    { name:"Facts to 20", ex:"8 + ? = 12", grade:"1st grade", rounds:x(function(){ return rAdd(20, false, false); }, 2).concat(x(function(){ return rSub(20, false, false); }, 2), x(function(){ return rMissing(20, false); }, 2), [function(){ return rAdd(20, false, true); }, function(){ return rSub(20, false, true); }, function(){ return rMissing(20, true); }, function(){ return rAdd(20, false, true); }]) },
+    { name:"Big numbers", ex:"34 + 25", grade:"2nd grade", rounds:x(function(){ return rAdd2(false); }, 2).concat(x(function(){ return rSub2(false); }, 2), x(function(){ return rAdd2(true); }, 3), x(function(){ return rSub2(true); }, 3)) },
+    { name:"Times and share", ex:"3 × 4, 12 ÷ 3", grade:"2nd to 3rd grade", rounds:x(function(){ return rGroups(false); }, 3).concat(x(function(){ return rTimes(false); }, 2), x(function(){ return rTimes(true); }, 2), [function(){ return rDivide(false); }, function(){ return rDivide(true); }, function(){ return rDivide(true); }]) }
+  ]},
+  pattern: { title:"Alien Patterns", icon:"1f47d", sub:"Crack the alien codes. Pick a level!", levels:[
+    { name:"Picture patterns", ex:"star, moon, star, ?", grade:"Starter", rounds:x(rPicturePattern, 10) },
+    { name:"Count up and down", ex:"7, 8, 9, ?", grade:"Kindergarten", rounds:x(function(){ return rCountUpDown(false); }, 6).concat(x(function(){ return rCountUpDown(true); }, 4)) },
+    { name:"Skip counting", ex:"5, 10, 15, ?", grade:"1st grade", rounds:x(function(){ return rSkip(false); }, 6).concat(x(function(){ return rSkip(true); }, 4)) },
+    { name:"Number rules", ex:"+3 or −2", grade:"2nd grade", rounds:x(function(){ return rRule(false, false); }, 4).concat(x(function(){ return rRule(true, false); }, 2), x(function(){ return rRule(false, true); }, 4)) },
+    { name:"Brain busters", ex:"1, 2, 4, 8, ?", grade:"3rd grade and up", rounds:x(function(){ return rBuster(false); }, 5).concat(x(function(){ return rBuster(true); }, 5)) }
+  ]}
+};
+var COLORS = ["#FFC93C","#FF8A3D","#E5487A","#3FB37F","#4BA3D9"];
+
+var gameId = (location.search.match(/[?&]g=([a-z]+)/) || [])[1];
+if (!GAMES[gameId]) gameId = "count";
+var GAME = GAMES[gameId];
+var ROUNDS = 10;
+document.title = GAME.title;
+
+/* ---------- storage and speech ---------- */
+function load(k, d){ try { var v = localStorage.getItem("math:" + gameId + ":" + k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } }
+function save(k, v){ try { localStorage.setItem("math:" + gameId + ":" + k, JSON.stringify(v)); } catch(e){} }
+var best = load("best", {});
+function say(keys, done){ Speech.say(keys, done); }
+Speech.onChange(function(){ if (hasClass($("home"), "on")) renderHome(); });
+
+/* ---------- level list ---------- */
+function renderHome(){
+  $("heroImg").src = "emoji/" + GAME.icon + ".svg";
+  $("heroTitle").textContent = GAME.title;
+  $("heroSub").textContent = GAME.sub;
+  var path = $("path"); path.innerHTML = "";
+  GAME.levels.forEach(function(lv, i){
+    var b = el("button", "paper press stone"), got = best[i];
+    b.innerHTML = '<span class="num" style="background:' + COLORS[i] + '">' + (i + 1) + '</span>' +
+      '<span class="sname">' + lv.name + '</span><span class="ex">' + lv.ex + '</span><span class="grade">' + lv.grade + '</span>' +
+      '<span class="best">' + (got === undefined ? "Not played yet" : 'Best: <b>&#9733; ' + got + '</b> of ' + ROUNDS) + '</span>';
+    b.onclick = function(){ startLevel(i); };
+    path.appendChild(b);
+  });
+  $("speechNote").style.display = Speech.mode() === "none" ? "" : "none";
+}
+/* Back: from a game or the end screen to the level list; from the level list to the picker */
+function goBack(){ Speech.stop(); if (hasClass($("home"), "on")) location.href = "math.html"; else { renderHome(); show("home"); } }
+$("backBtn").onclick = goBack;
+window.goBack = goBack;
+
+/* ---------- playing ---------- */
+var G = null;
+/* (tests may pass their own round maker to see one kind of round) */
+function startLevel(i, maker){
+  G = { level:i, makers:maker ? x(maker, ROUNDS) : shuffle(GAME.levels[i].rounds).slice(0, ROUNDS), round:0, stars:0, results:[] };
+  show("game");
+  renderRound();
+}
+
+function renderDots(){
+  var d = $("dots"); d.innerHTML = "";
+  for (var i = 0; i < ROUNDS; i++){
+    var r = G.results[i];
+    d.appendChild(el("span", "dot" + (r === "gold" ? " gold" : r === "ok" ? " ok" : i === G.round ? " now" : "")));
+  }
+  $("stars").innerHTML = "&#9733; " + G.stars;
+}
+
+function renderRound(){
+  var R = G.makers[G.round]();
+  G.R = R; G.mistakes = 0; G.locked = false; G.typed = "";
+  renderDots();
+  var stage = $("stage"); stage.innerHTML = "";
+  var hr = el("div", "hintrow");
+  var hintEl = el("p", "hint", Speech.tapText(R.hint));
+  hr.appendChild(hintEl);
+  if (Speech.canTalk()){
+    var sb = el("button", "paper press sayb flex", img("1f50a"));
+    sb.onclick = function(){ say(R.sayNow || R.say); };
+    hr.appendChild(sb);
+  }
+  stage.appendChild(hr);
+
+  if (R.kind === "steps"){
+    stage.appendChild(el("div", "prompt col", R.prompt));
+    var sc = el("div", "choices");
+    stage.appendChild(sc);
+    runStep(R, 0, hintEl, sc);
+  } else if (R.kind === "pad"){
+    var row = el("div", "padrow"), left = el("div", "padleft", R.prompt);
+    row.appendChild(left);
+    row.appendChild(keypad());
+    stage.appendChild(row);
+  } else {
+    if (R.prompt) stage.appendChild(el("div", "prompt col", R.prompt));
+    var ch = el("div", "choices");
+    R.options.forEach(function(o){
+      var b = el("button", "paper press choice " + o.cls, o.html);
+      b.onclick = function(){ if (G.locked) return; if (o.val === R.answer) correct(b); else wrong(b); };
+      ch.appendChild(b);
+    });
+    stage.appendChild(ch);
+  }
+  setTimeout(function(){ if (G && G.R === R) say(R.sayNow || R.say); }, 400);
+}
+
+/* ---------- carrying, one column at a time ---------- */
+function markColumn(place){
+  var box = document.querySelector("#stage .colsum"), band = box && box.querySelector(".cband");
+  if (!band) return;
+  var cells = box.querySelectorAll(".cnum .dg.p" + place + ", #entry .dg.p" + place);
+  if (place < 0 || !cells.length){ band.style.display = "none"; return; }
+  var b0 = box.getBoundingClientRect(), top = cells[0].getBoundingClientRect(), bot = cells[cells.length - 1].getBoundingClientRect(), pad = top.width * 0.12;
+  band.style.left = (top.left - b0.left - pad) + "px"; band.style.width = (top.width + 2*pad) + "px";
+  band.style.top = (top.top - b0.top - pad) + "px"; band.style.height = (bot.bottom - top.top + 2*pad) + "px";
+  band.style.display = "block";
+}
+/* the answer box while working: digits found so far, "?" in the column being added */
+function showWorking(R, place){
+  var e = entry(), cols = parseInt(e.getAttribute("data-cols"), 10), d = String(R.answer), html = "";
+  for (var p = cols - 1; p >= 0; p--){
+    var known = p < place ? d.charAt(d.length - 1 - p) : "";
+    html += '<i class="dg p' + p + '">' + (p === place ? "?" : known) + '</i>';
+  }
+  e.innerHTML = html;
+}
+function runStep(R, i, hintEl, ch){
+  var st = R.steps[i];
+  R.step = i;
+  hintEl.innerHTML = Speech.tapText(st.hint);
+  R.sayNow = i === 0 ? R.say.concat(st.say) : st.say;
+  showWorking(R, st.place);
+  setTimeout(function(){ if (G.R === R) markColumn(st.place); }, 0);
+  ch.innerHTML = "";
+  st.options.forEach(function(o){
+    var b = el("button", "paper press choice " + o.cls, o.html);
+    b.onclick = function(){
+      if (G.locked || R.busy || R.step !== i) return;
+      if (o.val !== st.answer){ wrong(b); return; }
+      if (i === R.steps.length - 1){ markColumn(-1); correct(b); return; }
+      /* ones done: write the ones digit, carry the 1 up above the tens, then on to the tens */
+      R.busy = true; addClass(b, "right");
+      showWorking(R, st.place + 1);
+      var cy = document.querySelector("#stage .ccarry .dg.p" + (st.place + 1));
+      if (cy) cy.innerHTML = '<b class="cy">1</b>';
+      var went = false;
+      function next(){ if (went || G.R !== R) return; went = true; R.busy = false; runStep(R, i + 1, hintEl, ch); say(R.sayNow); }
+      say(st.doneSay, function(){ setTimeout(next, 500); });
+      setTimeout(next, 12000);
+    };
+    ch.appendChild(b);
+  });
+}
+
+function keypad(){
+  var pad = el("div", "pad");
+  ["1","2","3","4","5","6","7","8","9","del","0","go"].forEach(function(k){
+    var label = k === "del" ? "&#9003;" : k === "go" ? "&#10003;" : k;
+    var b = el("button", "paper press key" + (k === "del" ? " del" : k === "go" ? " go" : ""), label);
+    b.onclick = function(){ padKey(k, b); };
+    pad.appendChild(b);
+  });
+  return pad;
+}
+function entry(){ return $("entry"); }
+function padKey(k, btn){
+  if (G.locked) return;
+  if (k === "del"){ G.typed = G.typed.slice(0, -1); }
+  else if (k === "go"){
+    if (!G.typed) return;
+    if (parseInt(G.typed, 10) === G.R.answer){ correct(entry()); return; }
+    G.mistakes++;
+    var e = entry(); removeClass(e, "nope"); void e.offsetWidth; addClass(e, "nope");
+    G.typed = "";
+    if (G.mistakes >= 3){ revealAnswer(); return; }
+    say(["p_try"]);
+  }
+  else if (G.typed.length < 3){ G.typed = (G.typed === "0" ? "" : G.typed) + k; }
+  setEntry(entry(), G.typed || "?");
+}
+/* patterns: show the steps between the numbers and the rule line */
+function showRule(){
+  var R = G.R, seq = document.querySelector("#stage .seq");
+  if (!R.rule || !seq) return [];
+  addClass(seq, "solved");
+  var line = el("div", "rule", "<b>Rule:</b> " + R.rule.html);
+  if (line.textContent.length > 46) addClass(line, "long");
+  seq.parentNode.insertBefore(line, seq.nextSibling);
+  return R.rule.say;
+}
+/* say it all, then move on once the voice is done (a long timer is only a safety net) */
+function sayThenNext(keys){
+  var R = G.R, moved = false;
+  function moveOn(){ if (moved) return; moved = true; if (G && G.R === R && hasClass($("game"), "on")) nextRound(); }
+  say(keys, function(){ setTimeout(moveOn, R.rule ? 1400 : 600); });
+  setTimeout(moveOn, 4000 + 1500*keys.length);
+}
+function revealAnswer(){
+  G.locked = true;
+  var e = entry(); setEntry(e, String(G.R.answer)); addClass(e, "reveal");
+  G.results[G.round] = "ok";
+  renderDots();
+  var rule = showRule();
+  sayThenNext(["m_answer_is"].concat(G.R.answerSay, rule));
+}
+
+function correct(target){
+  if (G.locked) return;
+  G.locked = true;
+  var clean = G.mistakes === 0;
+  if (clean) G.stars++;
+  G.results[G.round] = clean ? "gold" : "ok";
+  if (hasClass(target, "choice")) addClass(target, "right");
+  var e = entry(); if (e && (G.R.kind === "choice" || G.R.kind === "steps")){ if (G.R.answerHtml) e.innerHTML = G.R.answerHtml; else setEntry(e, String(G.R.answer)); }
+  renderDots();
+  confetti(target);
+  var rule = showRule();
+  sayThenNext(G.R.answerSay.concat(rule, ["m_praise_" + Math.floor(Math.random()*6)]));
+}
+function wrong(target){
+  G.mistakes++;
+  removeClass(target, "nope"); void target.offsetWidth; addClass(target, "nope");
+  setTimeout(function(){ addClass(target, "dim"); }, 400);
+  say(["p_try"]);
+}
+function nextRound(){
+  G.round++;
+  if (G.round >= ROUNDS) showEnd(); else renderRound();
+}
+
+function showEnd(){
+  var i = G.level, s = G.stars;
+  if (best[i] === undefined || s > best[i]){ best[i] = s; save("best", best); }
+  $("endTitle").textContent = s === ROUNDS ? "Perfect!" : s >= 7 ? "Out of this world!" : "Level done!";
+  $("endScore").innerHTML = "You earned <b>&#9733; " + s + "</b> of " + ROUNDS + " stars.";
+  var btns = $("endBtns"); btns.innerHTML = "";
+  var again = el("button", "paper press bigbtn", "Play again"); again.onclick = function(){ startLevel(i); }; btns.appendChild(again);
+  if (i < GAME.levels.length - 1){
+    var nx = el("button", "paper press bigbtn go", "Next: " + GAME.levels[i + 1].name); nx.onclick = function(){ startLevel(i + 1); }; btns.appendChild(nx);
+  }
+  var all = el("button", "paper press bigbtn", "All levels"); all.onclick = function(){ renderHome(); show("home"); }; btns.appendChild(all);
+  show("end");
+  G.R = null;
+  say([s === ROUNDS ? "p_perfect" : "p_stars_" + s]);
+}
+
+function confetti(target){
+  if (!target) return;
+  var r = target.getBoundingClientRect();
+  for (var i = 0; i < 16; i++){
+    (function(i){
+      var b = el("span", "bit");
+      b.style.left = (r.left + r.width/2) + "px";
+      b.style.top = (r.top + r.height/2) + "px";
+      b.style.background = COLORS[i % COLORS.length];
+      document.body.appendChild(b);
+      var dx = Math.random()*360 - 180, dy = -(Math.random()*260 + 40), rot = Math.random()*540;
+      setTimeout(function(){
+        var t = "translate(" + dx + "px," + dy + "px) rotate(" + rot + "deg)";
+        b.style.webkitTransform = t; b.style.transform = t; b.style.opacity = "0";
+      }, 20);
+      setTimeout(function(){ if (b.parentNode) b.parentNode.removeChild(b); }, 1000);
+    })(i);
+  }
+}
+
+(function(){
+  var sky = $("sky");
+  for (var i = 0; i < 70; i++){
+    var st = el("span", "star"), size = Math.random() < 0.15 ? 0.6 : 0.3;
+    st.style.left = (Math.random()*100) + "%"; st.style.top = (Math.random()*100) + "%";
+    st.style.width = st.style.height = size + "vmin";
+    st.style.webkitAnimationDelay = st.style.animationDelay = (Math.random()*3) + "s";
+    sky.appendChild(st);
+  }
+})();
+
+/* hook for automated tests (harmless on the frame) */
+window.MathGame = { game:function(){ return GAME; }, state:function(){ return G; }, start:startLevel, makers:{ rCount:rCount, rBuster:rBuster }, busters:BUSTERS };
+
+document.addEventListener("touchstart", function(){}, true);
+renderHome();
+})();
+</script>
+<script src="pwa.js"></script>
+</body>
+</html>

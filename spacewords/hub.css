@@ -1,0 +1,85 @@
+/* Shared look for the mission pickers (index.html, words.html, math.html). Plain CSS for Chromium 39. */
+@font-face{font-family:"WHFun";src:url("fonts/fredoka.ttf") format("truetype");font-weight:600}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:#0B1026;background-image:radial-gradient(circle at 50% 0%, #2A1E5C 0%, #131A3D 50%, #0B1026 90%);color:#F3F6FF;font-family:"WHFun","Trebuchet MS",sans-serif;font-weight:600;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:rgba(0,0,0,0);overflow:hidden;
+  display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;padding:4vmin 5vmin}
+button{font-family:inherit;font-weight:inherit;border:0;padding:0;margin:0;cursor:pointer;outline:none;text-align:left}
+.top{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;margin:0 0 4vmin}
+h1{margin:0;font-size:9vmin;line-height:1;font-weight:600;color:#FFD93D;text-shadow:0.6vmin 0.6vmin 0 #05081A}
+.games{-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;margin:0 -1.6vmin 6vmin}
+.game{-webkit-flex:1;flex:1;min-width:0;margin:0 1.6vmin;border:0.6vmin solid #5CE1E6;border-radius:3.4vmin;box-shadow:1vmin 1vmin 0 #05081A;color:#F3F6FF;
+  padding:4vmin;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-justify-content:flex-end;justify-content:flex-end;
+  background:#1B2457;background-image:radial-gradient(circle at 25% 25%, #3B2A7A 0%, #1B2457 60%);
+  -webkit-transition:-webkit-transform .08s,box-shadow .08s;transition:transform .08s,box-shadow .08s}
+.game:active{-webkit-transform:translate(0.6vmin,0.6vmin);transform:translate(0.6vmin,0.6vmin);box-shadow:0.4vmin 0.4vmin 0 #05081A}
+.game img{width:24vmin;height:24vmin;margin-bottom:auto}
+.art{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;margin-bottom:auto}
+.game .art img{margin-bottom:0}
+.nums{margin-left:2.4vmin;font-size:12vmin;line-height:1;white-space:nowrap;text-shadow:0.7vmin 0.7vmin 0 #05081A}
+.nums b{font-weight:600;margin:0 .3vmin}
+.nums .k1{color:#7CFFB2}.nums .k2{color:#5CE1E6}.nums .k3{color:#FF9ED8}.nums .op{color:#F3F6FF}
+.game.alt{background:#131A3D;background-image:radial-gradient(circle at 75% 25%, #2A1E5C 0%, #131A3D 60%)}
+.game.c1 .t{color:#7CFFB2}.game.c2 .t{color:#FFD93D}.game.c3 .t{color:#FF9ED8}
+.game.c1{border-color:#5CE1E6}.game.c2{border-color:#FFD93D}.game.c3{border-color:#FF9ED8}
+.t{font-size:7vmin;line-height:1}
+.d{font-size:3.4vmin;margin-top:1.4vmin;opacity:.85}
+.got{font-size:3.2vmin;margin-top:1.4vmin;color:#FFD93D}
+.three .t{font-size:6vmin}
+.three .game img{width:20vmin;height:20vmin}
+/* four games: a 2 x 2 grid, picture beside the words */
+.four{-webkit-flex-wrap:wrap;flex-wrap:wrap;margin-bottom:2vmin;-webkit-align-content:stretch;align-content:stretch}
+.four .game{-webkit-flex:0 0 46%;flex:0 0 46%;margin:1.4vmin 2%;padding:2.6vmin 3vmin;-webkit-flex-direction:row;flex-direction:row;-webkit-align-items:center;align-items:center;-webkit-justify-content:flex-start;justify-content:flex-start}
+.four .game img{width:16vmin;height:16vmin;margin:0 3vmin 0 0}
+.four .txt{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-flex:1;flex:1;min-width:0}
+.four .t{font-size:5.6vmin}
+.four .d{font-size:3vmin;margin-top:1vmin}
+.four .got{font-size:2.8vmin;margin-top:1vmin}
+/* five games: three per row, the second row centered */
+.five{-webkit-justify-content:center;justify-content:center}
+.five .game{-webkit-flex:0 0 29.3%;flex:0 0 29.3%;margin:1.4vmin 1.6%;padding:2.4vmin 2.4vmin}
+.five .game img{width:12vmin;height:12vmin;margin-right:2.2vmin}
+.five .t{font-size:4.6vmin}
+.five .d{font-size:2.6vmin}
+/* seven or eight games: four per row, a short last row centered */
+.seven .game{-webkit-flex:0 0 22%;flex:0 0 22%;margin:1.2vmin 1.2%;padding:2vmin 1.8vmin;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:flex-start;align-items:flex-start;-webkit-justify-content:flex-start;justify-content:flex-start}
+.seven .game img{width:11vmin;height:11vmin;margin:0 0 1.4vmin}
+.seven .t{font-size:4.4vmin}
+.seven .d{font-size:2.6vmin}
+/* nine games: five then four per row, smaller pictures */
+.nine .game{-webkit-flex:0 0 17.6%;flex:0 0 17.6%;margin:1.2vmin 1.2%;padding:1.8vmin 1.6vmin}
+.nine .game img{width:9.5vmin;height:9.5vmin;margin:0 0 1.2vmin}
+.nine .t{font-size:3.9vmin}
+.nine .d{font-size:2.4vmin}
+/* grown-ups: hold the button 1.5 s, then pick how many hours to hide Space Words */
+.adultrow{display:-webkit-flex;display:flex;-webkit-justify-content:flex-end;justify-content:flex-end;margin-top:1.6vmin}
+.adultbtn{position:relative;overflow:hidden;padding:1.2vmin 2.8vmin;font-size:2.8vmin;border-radius:5vmin;background:#131A3D;color:#B9C3F2;border:0.4vmin solid #4F5F80}
+.adultbtn span{position:relative}
+.adultbtn .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:#4F5F80}
+.hidepop{position:fixed;left:0;top:0;right:0;bottom:0;z-index:100;background:rgba(5,8,26,.88);display:-webkit-flex;display:flex;
+  -webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center}
+.hidecard{background:#F7F9FF;color:#1F2A44;border:0.6vmin solid #1F2A44;border-radius:3.4vmin;box-shadow:1vmin 1vmin 0 #05081A;padding:4vmin 5vmin;max-width:92vw;text-align:center}
+.hidecard h2{margin:0 0 1.4vmin;font-size:6vmin;font-weight:600}
+.hidecard p{margin:0 0 3vmin;font-size:3.4vmin;color:#4F5F80}
+.hours{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-justify-content:center;justify-content:center;margin-bottom:2.4vmin}
+.hours button{min-width:15vmin;margin:1vmin;padding:2vmin 2.4vmin;font-size:4.2vmin;border-radius:2.4vmin;background:#FFD93D;color:#1F2A44;border:0.5vmin solid #1F2A44;text-align:center}
+.hidecancel{padding:1.6vmin 4vmin;font-size:3.6vmin;border-radius:5vmin;background:#F7F9FF;color:#1F2A44;border:0.5vmin solid #1F2A44}
+@media (orientation: portrait){
+  .games{-webkit-flex-direction:column;flex-direction:column;margin:0 0 6vmin}
+  .game{margin:1.6vmin 0}
+  .game img,.three .game img{width:16vmin;height:16vmin}
+  .four .game,.five .game{-webkit-flex:0 0 96%;flex:0 0 96%}
+  .four .game img{width:13vmin;height:13vmin}
+  .nums{font-size:11vmin}
+  /* seven games: two per row, picture beside the words */
+  .seven{-webkit-flex-direction:row;flex-direction:row;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-align-content:stretch;align-content:stretch;margin:0 0 4vmin}
+  .seven .game{-webkit-flex:0 0 47%;flex:0 0 47%;margin:1.2vmin 1.5%;-webkit-flex-direction:row;flex-direction:row;-webkit-align-items:center;align-items:center;padding:2vmin 2.4vmin}
+  .seven .game img{width:13vmin;height:13vmin;margin:0 2.4vmin 0 0}
+  .seven .txt{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;min-width:0}
+  /* nine games: three per row, picture on top */
+  .nine .game{-webkit-flex:0 0 31%;flex:0 0 31%;margin:1.2vmin 1.1%;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:flex-start;align-items:flex-start;padding:2vmin 2vmin}
+  .nine .game img{width:12vmin;height:12vmin;margin:0 0 1.2vmin}
+  .nine .t{font-size:4.4vmin}
+  .nine .d{font-size:2.8vmin}
+}
