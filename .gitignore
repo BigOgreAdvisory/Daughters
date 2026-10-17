@@ -1,0 +1,5 @@
+node_modules/
+tests/test-results/
+tests/playwright-report/
+tests/shots/
+.DS_Store

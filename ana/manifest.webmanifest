@@ -1,6 +1,7 @@
 {
-  "name": "Play and Learn",
-  "short_name": "Play&Learn",
+  "id": "./",
+  "name": "Ana's Games",
+  "short_name": "Ana's Games",
   "description": "Short learning games for letters, sounds, sorting and first words.",
   "start_url": "./",
   "scope": "./",

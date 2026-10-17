@@ -1,29 +1,46 @@
-# Play and Learn
+# Daughters: learning games
 
-Short offline learning games for a young child, on an Android phone (Chrome, installable as a home-screen app).
+Two separate offline learning-game apps, hosted on GitHub Pages:
 
-- **Letter Lake**: match little and big letters
-- **Sound Sort**: same/different sounds, then first, last and middle sounds
-- **Sorting Shop**: sort by color, size, shape, then switching rules
-- **Word Match**: read a short word, tap the matching picture
+| URL | App | For |
+|---|---|---|
+| `https://bigogreadvisory.github.io/Daughters/` | Chooser page (two big buttons) | |
+| `https://bigogreadvisory.github.io/Daughters/ale/` | **Ale's Games**: reading (Spell-a-Word, Word Family Garden, Sight Word Hunt, Read & Pick, Warm-ups) | Ale, 6 |
+| `https://bigogreadvisory.github.io/Daughters/ana/` | **Ana's Games**: Letter Lake, Sound Sort, Sorting Shop, Word Match | Ana, 4 |
 
-No accounts, ads, analytics or network calls. Progress is stored only in the phone's browser storage.
+Each app installs separately to the Android home screen (Chrome > menu > Add to Home screen / Install app)
+and works offline. There are no accounts, ads, analytics or network calls. Progress is saved only on the
+phone (`playlearn.ale.v1` / `playlearn.ana.v1`).
 
-## Files
+## Layout
 
-| File | Purpose |
-|---|---|
-| `index.html` | The whole app (HTML, CSS, JS) |
-| `sw.js` | Service worker: caches the app so it works offline |
-| `manifest.webmanifest` | Lets Chrome install it to the home screen |
-| `icon-*.png` | App icons |
+```
+index.html            chooser (no service worker)
+sw.js                 cleanup only: removes the worker from the first version, which was installed at the root
+ana/                  Ana's app (index.html, sw.js, manifest, icons)
+ale/                  Ale's app
+  index.html ale.css  shell and styles
+  js/engine.js        storage, speech, levels, rewards, parent settings
+  js/words.js         phonics-sequenced word lists (each word is tagged cvc / blend / digraph / sight)
+  js/spell.js family.js sight.js readpick.js warmup.js   the games
+  themes/fairy.js ocean.js   one data file per theme (THEME-GUIDE.md)
+tests/                Playwright tests (not used by the apps)
+```
 
 ## Updating
 
-1. Edit `index.html` (or other files) and commit to `main`.
-2. In `sw.js`, change `VERSION` (for example `pl-v1` to `pl-v2`). Without this, phones keep showing the cached old copy.
-3. GitHub Pages redeploys automatically. Phones pick up the update the next time the app is opened with a connection (it may take a second open).
+1. Edit the files and commit to `main`.
+2. Bump `VERSION` in the `sw.js` of the app you changed (`ale/sw.js` or `ana/sw.js`), for example
+   `ale-v1` to `ale-v2`. Without this, phones keep showing the cached old copy.
+3. GitHub Pages redeploys automatically. Phones pick up the update the next time the app is opened online
+   (close it and open it once more).
+
+## Tests
+
+```
+cd tests && npm install && npx playwright install chromium && npm test
+```
 
 ## Parent settings
 
-On the home screen, press and hold the small gear for 3 seconds. Sound on/off, rounds per session (6/10/14), progress overview, reset.
+In either app, press and hold the small gear on the home screen for 3 seconds.
