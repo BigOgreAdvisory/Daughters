@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#9a5cf0">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Ale's Games</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="ale.css">
+</head>
+<body>
+<div id="app">
+  <div id="screen"></div>
+  <div id="caption" hidden></div>
+  <div id="fx"></div>
+  <div id="rotate"><span class="em">📱↻</span></div>
+</div>
+<!-- themes: one data file each (see THEME-GUIDE.md); add a new one here and in sw.js -->
+<script src="themes/fairy.js"></script>
+<script src="themes/ocean.js"></script>
+<script src="js/words.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/spell.js"></script>
+<script src="js/family.js"></script>
+<script src="js/sight.js"></script>
+<script src="js/readpick.js"></script>
+<script src="js/warmup.js"></script>
+<script>ALE.boot();</script>
+</body>
+</html>
