@@ -1,0 +1,17 @@
+{
+  "id": "./",
+  "name": "Word Quest",
+  "short_name": "Word Quest",
+  "description": "45-day sight word adventure: read, say and write the 220 Dolch words.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#bfe3ff",
+  "theme_color": "#4c6fe0",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

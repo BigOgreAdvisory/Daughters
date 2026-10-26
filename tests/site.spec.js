@@ -2,19 +2,20 @@ import { test, expect } from '@playwright/test';
 import { ALE_GAMES, ANA_GAMES, stubSpeech, guard, seedAle, openAleGame, playAnaSession, checkLayout, NO_ANIM } from './helpers.js';
 
 /* ---------------- root chooser ---------------- */
-test('root chooser links to all three apps and registers no service worker', async ({ page, request }) => {
+test('root chooser links to all four apps and registers no service worker', async ({ page, request }) => {
   const g = guard(page);
   await page.goto('./');
-  await expect(page.locator('a.kid')).toHaveCount(3);
+  await expect(page.locator('a.kid')).toHaveCount(4);
   expect(await page.locator('a.ale').getAttribute('href')).toBe('./ale/');
   expect(await page.locator('a.ana').getAttribute('href')).toBe('./ana/');
   expect(await page.locator('a.space').getAttribute('href')).toBe('./spacewords/');
+  expect(await page.locator('a.quest').getAttribute('href')).toBe('./dolch/');
   await page.waitForTimeout(500);
   expect(await page.evaluate(() => navigator.serviceWorker.getRegistrations().then(r => r.length))).toBe(0);
-  for(const app of ['ale','ana','spacewords']){
+  for(const app of ['ale','ana','spacewords','dolch']){
     const m = await (await request.get(`${app}/manifest.webmanifest`)).json();
     expect(m.start_url).toBe(app === 'spacewords' ? './index.html' : './'); expect(m.scope).toBe('./');
-    expect(m.name).toBe({ale:"Ale's Games", ana:"Ana's Games", spacewords:'Space Words'}[app]);
+    expect(m.name).toBe({ale:"Ale's Games", ana:"Ana's Games", spacewords:'Space Words', dolch:'Word Quest'}[app]);
     for(const ic of m.icons) expect((await request.get(`${app}/${ic.src}`)).status()).toBe(200);
   }
   g.check();
