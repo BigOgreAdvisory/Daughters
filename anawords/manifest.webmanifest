@@ -1,0 +1,32 @@
+{
+  "id": "./",
+  "name": "Ana's Word Quest",
+  "short_name": "Ana's Word Q",
+  "description": "Sight words at your own pace: read, say and write the 220 Dolch words.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffe3f1",
+  "theme_color": "#e0559b",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

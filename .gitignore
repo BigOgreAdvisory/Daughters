@@ -3,3 +3,4 @@ tests/test-results/
 tests/playwright-report/
 tests/shots/
 .DS_Store
+tests/pw.local.config.js

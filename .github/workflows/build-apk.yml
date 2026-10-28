@@ -1,0 +1,64 @@
+# Builds an installable Android/Fire OS APK of one Word Quest edition (a WebView wrapper around the same
+# files that are served on GitHub Pages). Run it from the Actions tab: "Build APK" > Run workflow.
+# The APK is signed with a throwaway debug key: fine for sideloading on a Kindle Fire. For the Amazon
+# Appstore it must be re-signed with your own release key (see docs/KINDLE.md).
+name: Build APK
+on:
+  workflow_dispatch:
+    inputs:
+      edition:
+        description: 'Which edition to build'
+        required: true
+        default: dolch
+        type: choice
+        options: [dolch, anawords, sightwords]
+permissions:
+  contents: write
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - name: Assemble the web files
+        run: |
+          mkdir -p wrap/www && cd wrap
+          cp -r ../shared www/shared
+          cp -r ../${{ inputs.edition }} www/${{ inputs.edition }}
+          rm -f www/${{ inputs.edition }}/sw.js        # no service worker inside the app: the files are already on the device
+          printf '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><script>location.replace("./%s/index.html")</script>' "${{ inputs.edition }}" > www/index.html
+      - name: Create the Android project
+        working-directory: wrap
+        run: |
+          case "${{ inputs.edition }}" in
+            dolch) NAME="Word Quest"; ID=com.bigogreadvisory.wordquest ;;
+            anawords) NAME="Ana's Word Quest"; ID=com.bigogreadvisory.anawordquest ;;
+            sightwords) NAME="Sight Word Quest"; ID=com.bigogreadvisory.sightwordquest ;;
+          esac
+          npm init -y >/dev/null
+          npm i --silent @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+          npx cap init "$NAME" "$ID" --web-dir www
+          npx cap add android
+          npx cap sync android
+      - name: Build the APK
+        working-directory: wrap/android
+        run: ./gradlew --no-daemon assembleDebug
+      - name: Name the file
+        run: |
+          mkdir -p out && cp wrap/android/app/build/outputs/apk/debug/app-debug.apk out/${{ inputs.edition }}.apk
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.edition }}-apk
+          path: out/${{ inputs.edition }}.apk
+      # The repository is public, so a release is public too. The edition for sale stays an artifact only.
+      - name: Publish a release (free editions only)
+        if: inputs.edition != 'sightwords'
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          gh release create "apk-${{ inputs.edition }}-${{ github.run_number }}" out/${{ inputs.edition }}.apk \
+            --title "${{ inputs.edition }} APK (build ${{ github.run_number }})" \
+            --notes "Sideload on a Kindle Fire: Settings > Security > Apps from unknown sources, open this file in Silk's Downloads, tap Install."

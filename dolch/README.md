@@ -4,6 +4,12 @@ Offline tablet app (made for a Kindle Fire; works in any modern browser) that te
 
 Live at `https://bigogreadvisory.github.io/Daughters/dolch/`. On the Fire tablet open it in Silk, then use the menu to add it to the home screen. It works offline after the first load.
 
+## Editions, Kindle and replay
+
+- This folder is Ale's edition (45 days by the calendar). `anawords/` and `sightwords/` use the same code at the child's own pace (lessons, no calendar). The code is in `../shared/`.
+- **Replay:** tap any finished day (or lesson) on the path to play it again. A replay does not count as a new day, does not change the streak and cannot rush the review spacing (a skill only moves up if it was due anyway).
+- **Kindle Fire:** see `../docs/KINDLE.md`. Silk is detected automatically and gets bigger buttons.
+
 ## How the 45 days work
 
 | Days | What happens |
@@ -53,11 +59,10 @@ On the home screen press and hold the small gear for 3 seconds. It shows progres
 ## Files
 
 ```
-index.html            the app (screens, games, scheduler, handwriting pad)
-words.js              the 220 words, one sentence each, grade groups, pronunciation fixes
-sw.js                 offline cache (bump VERSION when you change any file)
+index.html            page shell; the app itself is ../shared/app.js and app.css
+config.js             this edition's settings (pace, name, colour)
+sw.js                 offline cache (bump VERSION when you change any file, including ../shared/)
 manifest.webmanifest  install info
-fonts/                Andika, a typeface designed for beginning readers (single-story a and g)
 ```
 
 Progress is stored only on the device (`dolch.v1`). No accounts, no ads, no network calls. The microphone recording (optional) is played back once and never stored or sent.

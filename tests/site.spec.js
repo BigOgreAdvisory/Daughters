@@ -2,20 +2,21 @@ import { test, expect } from '@playwright/test';
 import { ALE_GAMES, ANA_GAMES, stubSpeech, guard, seedAle, openAleGame, playAnaSession, checkLayout, NO_ANIM } from './helpers.js';
 
 /* ---------------- root chooser ---------------- */
-test('root chooser links to all four apps and registers no service worker', async ({ page, request }) => {
+test('root chooser links to all five apps and registers no service worker', async ({ page, request }) => {
   const g = guard(page);
   await page.goto('./');
-  await expect(page.locator('a.kid')).toHaveCount(4);
+  await expect(page.locator('a.kid')).toHaveCount(5);
   expect(await page.locator('a.ale').getAttribute('href')).toBe('./ale/');
   expect(await page.locator('a.ana').getAttribute('href')).toBe('./ana/');
   expect(await page.locator('a.space').getAttribute('href')).toBe('./spacewords/');
   expect(await page.locator('a.quest').getAttribute('href')).toBe('./dolch/');
+  expect(await page.locator('a.anaquest').getAttribute('href')).toBe('./anawords/');
   await page.waitForTimeout(500);
   expect(await page.evaluate(() => navigator.serviceWorker.getRegistrations().then(r => r.length))).toBe(0);
-  for(const app of ['ale','ana','spacewords','dolch']){
+  for(const app of ['ale','ana','spacewords','dolch','anawords']){
     const m = await (await request.get(`${app}/manifest.webmanifest`)).json();
     expect(m.start_url).toBe(app === 'spacewords' ? './index.html' : './'); expect(m.scope).toBe('./');
-    expect(m.name).toBe({ale:"Ale's Games", ana:"Ana's Games", spacewords:'Space Words', dolch:'Word Quest'}[app]);
+    expect(m.name).toBe({ale:"Ale's Games", ana:"Ana's Games", spacewords:'Space Words', dolch:'Word Quest', anawords:"Ana's Word Quest"}[app]);
     for(const ic of m.icons) expect((await request.get(`${app}/${ic.src}`)).status()).toBe(200);
   }
   g.check();
