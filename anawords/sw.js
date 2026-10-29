@@ -1,7 +1,7 @@
 /* Offline cache for Ana's Word Quest. Bump VERSION on every deploy so tablets pick up the new files.
    Caches are shared by the whole site, so only caches starting with PREFIX are ever touched here. */
 const PREFIX = 'anawords-';
-const VERSION = 'anawords-v2';
+const VERSION = 'anawords-v3';
 const FILES = ['./', './index.html', './config.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png',
   '../shared/app.js', '../shared/app.css', '../shared/words.js', '../shared/fonts/andika.ttf', '../shared/fonts/andika-bold.ttf'];
 

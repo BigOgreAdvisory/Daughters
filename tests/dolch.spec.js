@@ -163,7 +163,7 @@ test('each edition works offline and keeps its own progress', async ({ page, con
   for(const [ed, key, prefix] of [['dolch', 'dolch.v1', 'dolch'], ['anawords', 'anawords.v1', 'anawords'], ['sightwords', 'sightwords.v1', 'sightwords']]){
     await page.goto(ed + '/');
     await page.evaluate(() => navigator.serviceWorker.ready);
-    await expect.poll(() => page.evaluate(p => caches.open(p + '-v2').then(c => c.keys()).then(k => k.length), prefix)).toBeGreaterThanOrEqual(12);
+    await expect.poll(() => page.evaluate(p => caches.open(p + '-v3').then(c => c.keys()).then(k => k.length), prefix)).toBeGreaterThanOrEqual(12);
     expect(await page.evaluate(k => localStorage.getItem(k) !== null, key)).toBe(true);
   }
   await context.setOffline(true);
@@ -173,4 +173,38 @@ test('each edition works offline and keeps its own progress', async ({ page, con
     await page.getByRole('button', { name: /My Words/ }).click();
     await expect(page.locator('.gem').first()).toBeVisible();
   }
+});
+
+test('speech: picks the on-device voice and survives a quick second speak() after cancel()', async ({ browser }) => {
+  const ctx = await browser.newContext(); const page = await ctx.newPage();
+  await page.addInitScript(() => {
+    window.__said = [];
+    let cancelledAt = 0;
+    const synth = {
+      speaking: false, pending: false,
+      getVoices: () => [{name:'Google US English', lang:'en-US', localService:false}, {name:'Samantha', lang:'en-US', localService:true}],
+      addEventListener(){}, removeEventListener(){}, resume(){},
+      cancel(){ cancelledAt = Date.now(); this.speaking = false; },
+      speak(u){
+        if(Date.now() - cancelledAt < 60) return;                     // what Chrome does: the speak() right after cancel() is lost
+        this.speaking = true; u.onstart && u.onstart();
+        window.__said.push([u.text, u.voice && u.voice.name]);
+        setTimeout(() => { this.speaking = false; u.onend && u.onend(); }, 150);
+      }
+    };
+    Object.defineProperty(window, 'speechSynthesis', {value: synth, configurable: true});
+    window.SpeechSynthesisUtterance = function(t){ this.text = t; };
+  });
+  const g = guard(page);
+  await page.goto('dolch/');
+  await page.getByRole('button', { name: /Play Day 1/ }).click();
+  await expect.poll(() => page.evaluate(() => window.__said.filter(x => x[0].trim()).length)).toBeGreaterThan(0);
+  await page.getByRole('button', { name: /Hear it/ }).click();
+  await page.waitForTimeout(40);
+  await page.getByRole('button', { name: /Spell it/ }).click();      // while the first is still speaking
+  await expect.poll(() => page.evaluate(() => window.__said.map(x => x[0]).join('|'))).toContain('T, H, E');
+  const said = await page.evaluate(() => window.__said.filter(x => x[0].trim()));
+  expect(said.every(x => x[1] === 'Samantha')).toBe(true);           // never the online voice
+  g.check();
+  await ctx.close();
 });

@@ -83,22 +83,47 @@ function sfx(k){
   else if(k==='win'){ [523,659,784,1047].forEach(function(f,i){ tone(f,i*.13,.25); }); }
   else if(k==='tap'){ tone(520,0,.06,'sine',.08); }
 }
-var TTS = {ok: ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined'), voice:null};
+var TTS = {ok: ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined'), voice:null, voices:0, started:false, fails:0, warned:false};
+/* Prefer a voice stored on the device: "network" voices (like Chrome's Google US English) stay silent offline or when blocked. */
 function pickVoice(){
-  var vs = []; try{ vs = speechSynthesis.getVoices(); }catch(e){}
-  var en = vs.filter(function(v){ return /^en[-_]US/i.test(v.lang); });
-  TTS.voice = en.filter(function(v){ return /female|samantha|google us|joanna|ivy|kendra|salli|allison/i.test(v.name); })[0] || en[0] || vs.filter(function(v){ return /^en/i.test(v.lang); })[0] || null;
+  var vs = []; try{ vs = speechSynthesis.getVoices() || []; }catch(e){}
+  TTS.voices = vs.length;
+  function best(list){ return list.filter(function(v){ return /samantha|female|joanna|ivy|kendra|salli|allison|ava|karen|serena|zira|aria/i.test(v.name); })[0] || list[0] || null; }
+  var en = vs.filter(function(v){ return /^en/i.test(v.lang); });
+  var us = en.filter(function(v){ return /^en[-_]US/i.test(v.lang); });
+  var local = function(l){ return l.filter(function(v){ return v.localService !== false; }); };
+  TTS.voice = best(local(us)) || best(local(en)) || best(us) || best(en) || null;
 }
-if(TTS.ok){ pickVoice(); try{ speechSynthesis.onvoiceschanged = pickVoice; }catch(e){} }
+if(TTS.ok){ pickVoice(); try{ speechSynthesis.addEventListener('voiceschanged', pickVoice); }catch(e){ try{ speechSynthesis.onvoiceschanged = pickVoice; }catch(e2){} } }
+var UTT = [];                                                   // keep a reference: Chrome drops an utterance that nothing points to, mid-sentence
+/* Safari and some tablets only allow speech after a touch: say nothing, once, on the first touch */
+function unlockSpeech(){
+  if(!TTS.ok || unlockSpeech.done) return; unlockSpeech.done = true;
+  try{ var u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); }catch(e){}
+}
+document.addEventListener('pointerdown', unlockSpeech, {once:true, capture:true});
+document.addEventListener('touchstart', unlockSpeech, {once:true, capture:true});
 function speak(text, rate){
   return new Promise(function(res){
     if(!TTS.ok || !S.sound){ res(); return; }
-    try{ speechSynthesis.cancel(); }catch(e){}
-    var u = new SpeechSynthesisUtterance(text), done = false;
-    u.lang = 'en-US'; if(TTS.voice) u.voice = TTS.voice; u.rate = rate || S.rate; u.pitch = 1.05;
-    function fin(){ if(!done){ done = true; res(); } }
-    u.onend = fin; u.onerror = fin; setTimeout(fin, 1800 + text.length*150);
-    try{ speechSynthesis.resume(); speechSynthesis.speak(u); }catch(e){ fin(); }
+    var u = new SpeechSynthesisUtterance(text), done = false, t0 = Date.now(), timer;
+    u.lang = 'en-US'; if(TTS.voice) u.voice = TTS.voice; u.rate = rate || S.rate; u.pitch = 1.05; u.volume = 1;
+    u.onstart = function(){ TTS.started = true; TTS.fails = 0; };
+    function fin(){
+      if(done) return; done = true; clearTimeout(timer);
+      var i = UTT.indexOf(u); if(i >= 0) UTT.splice(i, 1);
+      /* it "ended" almost at once and never started: there is no usable voice on this device */
+      if(!TTS.started && Date.now() - t0 < 700 && ++TTS.fails >= 2 && !TTS.warned){
+        TTS.warned = true; toast('No voice found on this device. A grown-up: see Settings, Text-to-speech.');
+      }
+      res();
+    }
+    u.onend = fin; u.onerror = fin; timer = setTimeout(fin, 2500 + text.length*180);
+    UTT.push(u);
+    function go(){ try{ speechSynthesis.resume(); speechSynthesis.speak(u); }catch(e){ fin(); } }
+    var busy = false; try{ busy = speechSynthesis.speaking || speechSynthesis.pending; }catch(e){}
+    if(busy){ try{ speechSynthesis.cancel(); }catch(e){} setTimeout(go, 120); }   // a speak() right after cancel() is dropped by Chrome
+    else go();
   });
 }
 function sayWord(w, rate){ return speak(PRON[w] || w, rate || S.rate*0.9); }
@@ -608,8 +633,9 @@ function parentPanel(){
     S.sound = $('#pSound').checked; S.grownupSay = $('#pGU').checked; S.mic = $('#pMic').checked; save(); home(); toast('Saved');
   }));
   row.appendChild(btn('Cancel', 'gray small', home));
-  row.appendChild(btn('Test voice', 'orange small', function(){ S.rate = +$('#pRate').value; speak('Hello ' + ($('#pName').value || 'there') + '. The word is little.'); }));
-  p.appendChild(row);
+  row.appendChild(btn('Test voice', 'orange small', function(){ S.rate = +$('#pRate').value; pickVoice(); vinfo(); speak('Hello ' + ($('#pName').value || 'there') + '. The word is little.'); }));
+  var vi = mk('sale-note', ''); function vinfo(){ vi.textContent = !TTS.ok ? 'This browser cannot speak. Try Chrome, Edge, Safari or Silk.' : 'Voices on this device: ' + TTS.voices + (TTS.voice ? '. Using: ' + TTS.voice.name + (TTS.voice.localService === false ? ' (online voice)' : '') : '. None found: the default will be used.'); } vinfo();
+  p.appendChild(row); p.appendChild(vi);
   var wk = intr.map(function(x){ var r = rec(x.w); return {w:x.w, m:Math.min(r.r.b, r.s.b, r.w.b), bad:r.bad}; }).sort(function(a,b){ return a.m - b.m || b.bad - a.bad; }).slice(0, 12);
   p.appendChild(mk('', '<h2 style="text-align:left;font-size:20px">Words needing the most help</h2>' + (wk.length ? wk.map(function(x){ return '<b>' + esc(x.w) + '</b>'; }).join(', &nbsp;') : 'None yet.')));
   var html = '<h2 style="text-align:left;font-size:20px;margin-top:18px">All words</h2><table><tr><th>Word</th><th>Read</th><th>Say</th><th>Write</th></tr>';
